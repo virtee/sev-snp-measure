@@ -9,6 +9,7 @@ import uuid
 
 OvmfSevMetadataDesc = collections.namedtuple('OvmfSevMetadataDesc', ['gpa', 'size', 'page_type'])
 
+
 class OVMF(object):
     FOUR_GB = 0x100000000
     OVMF_TABLE_FOOTER_GUID = "96b582de-1fb2-45f7-baea-a366c55a082d"
@@ -75,7 +76,7 @@ class OVMF(object):
         if metadata_header[:4] != b'ASEV':
             raise "Wrong SEV metadata signature"
         metadata_len = int.from_bytes(metadata_header[4:8], byteorder='little')
-        version = int.from_bytes(metadata_header[8:12], byteorder='little')
+        _ = int.from_bytes(metadata_header[8:12], byteorder='little')  # metadata version
         num_desc = int.from_bytes(metadata_header[12:16], byteorder='little')
         all_desc_bytes = self._data[start+16:start+metadata_len]
         desc_bytes_size = struct.calcsize("<III")

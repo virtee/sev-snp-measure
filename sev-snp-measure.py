@@ -4,6 +4,7 @@ import argparse
 
 from sevsnpmeasure import guest
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Calculate AMD SEV-SNP launch measurement')
     parser.add_argument('--ovmf',
@@ -20,6 +21,7 @@ def main() -> None:
 
     ld = guest.calc_launch_digest(args.ovmf, args.vmsa, args.kernel, args.initrd, args.append)
     print("Calculated SNP guest measurement:", ld.hex())
+
 
 if __name__ == '__main__':
     main()

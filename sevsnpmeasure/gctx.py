@@ -8,20 +8,26 @@ import hashlib
 LD_SIZE = hashlib.sha384().digest_size
 ZEROS = bytes(LD_SIZE)
 
+
 def le8(n: int) -> bytes:
     return n.to_bytes(1, byteorder='little')
+
 
 def le16(n: int) -> bytes:
     return n.to_bytes(2, byteorder='little')
 
+
 def le32(n: int) -> bytes:
     return n.to_bytes(4, byteorder='little')
+
 
 def le64(n: int) -> bytes:
     return n.to_bytes(8, byteorder='little')
 
+
 def sha384(buf: bytes) -> bytes:
     return hashlib.sha384(buf).digest()
+
 
 class GCTX(object):
     """

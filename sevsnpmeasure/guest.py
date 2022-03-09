@@ -10,6 +10,7 @@ from .sev_hashes import construct_sev_hashes_page
 
 PAGE_MASK = 0xfff
 
+
 def calc_launch_digest(ovmf_file, vmsa_file, kernel, initrd, append):
     ovmf = OVMF(ovmf_file)
 

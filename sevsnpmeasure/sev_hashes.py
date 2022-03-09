@@ -11,8 +11,10 @@ SEV_KERNEL_ENTRY_GUID = "4de79437-abd2-427f-b835-d5b172d2045b"
 SEV_INITRD_ENTRY_GUID = "44baf731-3a2f-4bd7-9af1-41e29169781d"
 SEV_CMDLINE_ENTRY_GUID = "97d02dd8-bd20-4c94-aa78-e7714d36ab2a"
 
+
 def guid_to_le(guid_str):
     return uuid.UUID("{" + guid_str + "}").bytes_le
+
 
 #
 # Generate the SEV hashes area - this must be *identical* to the way QEMU
@@ -48,6 +50,7 @@ def construct_sev_hashes_table(kernel_hash, initrd_hash, cmdline_hash):
     ht[e+18:e+18+32] = kernel_hash
 
     return ht
+
 
 def construct_sev_hashes_page(offset, kernel_hash, initrd_hash, cmdline_hash):
     assert offset < 4096
