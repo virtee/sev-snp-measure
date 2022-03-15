@@ -35,7 +35,7 @@ class OVMF(object):
     def metadata_items(self):
         return self._metadata_items
 
-    def sev_hashes_table_gpa(self) -> bytes:
+    def sev_hashes_table_gpa(self) -> int:
         if self.SEV_HASH_TABLE_RV_GUID not in self._table:
             raise "Can't find SEV_HASH_TABLE_RV_GUID entry in OVMF table"
         entry = self._table[self.SEV_HASH_TABLE_RV_GUID]
