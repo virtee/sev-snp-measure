@@ -37,7 +37,7 @@ class OVMF(object):
 
     def sev_hashes_table_gpa(self) -> int:
         if self.SEV_HASH_TABLE_RV_GUID not in self._table:
-            raise "Can't find SEV_HASH_TABLE_RV_GUID entry in OVMF table"
+            raise RuntimeError("Can't find SEV_HASH_TABLE_RV_GUID entry in OVMF table")
         entry = self._table[self.SEV_HASH_TABLE_RV_GUID]
         return int.from_bytes(entry[:4], byteorder='little')
 
@@ -58,7 +58,7 @@ class OVMF(object):
             entry_guid = table_bytes[len(table_bytes)-16:]
             entry_size = int.from_bytes(table_bytes[len(table_bytes)-18:len(table_bytes)-16], byteorder='little')
             if entry_size < (16 + 2):
-                raise "Invalid entry size"
+                raise RuntimeError("Invalid entry size")
             entry_data = table_bytes[len(table_bytes)-entry_size:len(table_bytes)-18]
             entry_guid_str = str(uuid.UUID(bytes_le=entry_guid))
             self._table[entry_guid_str] = entry_data
@@ -74,7 +74,7 @@ class OVMF(object):
         metadata_header = self._data[start:start+16]
         # TODO use struct.unpack
         if metadata_header[:4] != b'ASEV':
-            raise "Wrong SEV metadata signature"
+            raise RuntimeError("Wrong SEV metadata signature")
         metadata_len = int.from_bytes(metadata_header[4:8], byteorder='little')
         _ = int.from_bytes(metadata_header[8:12], byteorder='little')  # metadata version
         num_desc = int.from_bytes(metadata_header[12:16], byteorder='little')
