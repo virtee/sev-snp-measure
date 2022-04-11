@@ -11,7 +11,7 @@ computing.
 
 Install from pip:
 
-   pip install sev-snp-measure
+    pip install sev-snp-measure
 
 This installs the `sevsnpmeasure` package and a sev-snp-measure command-line
 script.
@@ -24,7 +24,7 @@ Clone the Github repo and run the script directly from the local directory:
     cd sev-snp-measure
     ./sev-snp-measure.py --help
 
-## Usage
+## Command-line usage
 
 ```
 $ sev-snp-measure --help
@@ -36,14 +36,26 @@ optional arguments:
   -h, --help       show this help message and exit
   --vcpus VCPUS    Number of vcpus
   --ovmf OVMF      OVMF file to calculate hash from
-  --kernel KERNEL  kernel file to calculate hash from
-  --initrd INITRD  initrd file to calculate hash from (use with --kernel)
-  --append APPEND  the kernel command line to calculate hash from (use with --kernel)
+  --kernel KERNEL  Kernel file to calculate hash from
+  --initrd INITRD  Initrd file to calculate hash from (use with --kernel)
+  --append APPEND  Kernel command line to calculate hash from (use with --kernel)
 ```
 
 For example:
 
-   sev-snp-measure --vcpus=1 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
+    sev-snp-measure --vcpus=1 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
+
+## Programmatic usage
+
+After installing the `sev-snp-measure` package with pip, you can call it from
+another Python application:
+
+```python3
+from sevsnpmeasure import guest
+
+ld = guest.calc_launch_digest(vcpus_num, ovmf_path, kernel_path, initrd_path, cmdline_str)
+print("Calculated measurement:", ld.hex())
+```
 
 ## Notes
 
