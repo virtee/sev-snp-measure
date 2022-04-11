@@ -6,8 +6,8 @@ class TestGuest(unittest.TestCase):
 
     def test_calc_launch_digest(self):
         ld = guest.calc_launch_digest(
+                1,
                 "tests/fixtures/ovmf_suffix.bin",
-                "tests/fixtures/vmsa_cpu0.bin",
                 "/dev/null",
                 "/dev/null",
                 "")

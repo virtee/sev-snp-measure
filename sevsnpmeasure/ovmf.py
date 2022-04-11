@@ -14,7 +14,7 @@ class OVMF(object):
     FOUR_GB = 0x100000000
     OVMF_TABLE_FOOTER_GUID = "96b582de-1fb2-45f7-baea-a366c55a082d"
     SEV_HASH_TABLE_RV_GUID = "7255371f-3a3b-4b04-927b-1da6efa8d454"
-    SEV_INFO_BLOCK_GUID = "00f771de-1a7e-4fcb-890e-68c77e2fb44e"
+    SEV_ES_RESET_BLOCK_GUID = "00f771de-1a7e-4fcb-890e-68c77e2fb44e"
     OVMF_SEV_META_DATA_GUID = "dc886566-984a-4798-a75e-5585a7bf67cc"
 
     def __init__(self, _filename: str):
@@ -39,6 +39,12 @@ class OVMF(object):
         if self.SEV_HASH_TABLE_RV_GUID not in self._table:
             raise RuntimeError("Can't find SEV_HASH_TABLE_RV_GUID entry in OVMF table")
         entry = self._table[self.SEV_HASH_TABLE_RV_GUID]
+        return int.from_bytes(entry[:4], byteorder='little')
+
+    def sev_es_reset_eip(self) -> int:
+        if self.SEV_ES_RESET_BLOCK_GUID not in self._table:
+            raise RuntimeError("Can't find SEV_ES_RESET_BLOCK_GUID entry in OVMF table")
+        entry = self._table[self.SEV_ES_RESET_BLOCK_GUID]
         return int.from_bytes(entry[:4], byteorder='little')
 
     def _parse_footer_table(self) -> None:

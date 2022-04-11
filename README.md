@@ -11,15 +11,14 @@ computing.
 $ git clone https://github.com/IBM/sev-snp-measure.git
 $ cd sev-snp-measure
 $ ./sev-snp-measure.py --help
-usage: sev-snp-measure.py [-h] --ovmf OVMF --vmsa VMSA [--kernel KERNEL] [--initrd INITRD]
-                          [--append APPEND]
+usage: sev-snp-measure.py [-h] --vcpus VCPUS --ovmf OVMF [--kernel KERNEL] [--initrd INITRD] [--append APPEND]
 
 Calculate AMD SEV-SNP launch measurement
 
 optional arguments:
   -h, --help       show this help message and exit
+  --vcpus VCPUS    Number of vcpus
   --ovmf OVMF      OVMF file to calculate hash from
-  --vmsa VMSA      file containing the contents of VMSA in binary format
   --kernel KERNEL  kernel file to calculate hash from
   --initrd INITRD  initrd file to calculate hash from (use with --kernel)
   --append APPEND  the kernel command line to calculate hash from (use with --kernel)
