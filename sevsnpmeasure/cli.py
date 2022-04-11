@@ -9,11 +9,11 @@ def main() -> int:
     parser.add_argument('--ovmf',
                         help='OVMF file to calculate hash from', required=True)
     parser.add_argument('--kernel',
-                        help='kernel file to calculate hash from')
+                        help='Kernel file to calculate hash from')
     parser.add_argument('--initrd',
-                        help='initrd file to calculate hash from (use with --kernel)')
+                        help='Initrd file to calculate hash from (use with --kernel)')
     parser.add_argument('--append',
-                        help='the kernel command line to calculate hash from (use with --kernel)')
+                        help='Kernel command line to calculate hash from (use with --kernel)')
     args = parser.parse_args()
 
     ld = guest.calc_launch_digest(args.vcpus, args.ovmf, args.kernel, args.initrd, args.append)
