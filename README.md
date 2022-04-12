@@ -2,8 +2,8 @@
 
 ## Scope
 
-Calculate expected measurement of an AMD SEV-SNP guest VM for confidential
-computing.
+Command-line tool and Python library to calculate expected measurement of an
+AMD SEV-SNP guest VM for confidential computing.
 
 ## Installation
 
@@ -13,8 +13,8 @@ Install from pip:
 
     pip install sev-snp-measure
 
-This installs the `sevsnpmeasure` package and a sev-snp-measure command-line
-script.
+This installs the `sevsnpmeasure` package and the `sev-snp-measure`
+command-line script.
 
 ### From Github
 
@@ -43,7 +43,8 @@ optional arguments:
 
 For example:
 
-    sev-snp-measure --vcpus=1 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
+    $ sev-snp-measure --vcpus=1 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
+    Calculated SNP guest measurement: 1c8bf2f320add50cb22ca824c17f3fa51a7a4296a4a3113698c2e31b50c2dcfa7e36dea3ebc3a9411061c30acffc6d5a
 
 ## Programmatic usage
 
