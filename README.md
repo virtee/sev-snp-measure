@@ -58,6 +58,13 @@ ld = guest.calc_launch_digest(vcpus_num, ovmf_path, kernel_path, initrd_path, cm
 print("Calculated measurement:", ld.hex())
 ```
 
+## Related projects
+
+* libvirt tools: [virt-dom-sev-validate](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-validate.py),
+  [virt-dom-sev-vmsa-tool](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-vmsa-tool.py)
+* [sev Rust crate](https://github.com/virtee/sev)
+* [AMD SEV-Tool](https://github.com/AMDESE/sev-tool)
+
 ## Notes
 
 If you have any questions or issues you can create a new [issue
