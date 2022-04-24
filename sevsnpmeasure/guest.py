@@ -13,7 +13,7 @@ from .sev_mode import SevMode
 PAGE_MASK = 0xfff
 
 
-def add_kernel_hashes(gctx, ovmf, kernel_hash, initrd_hash, cmdline_hash):
+def add_kernel_hashes(gctx, ovmf, kernel_hash, initrd_hash, cmdline_hash) -> None:
     sev_hashes_table_gpa = ovmf.sev_hashes_table_gpa()
     offset = sev_hashes_table_gpa & PAGE_MASK
     sev_hashes_page_gpa = sev_hashes_table_gpa & ~PAGE_MASK
@@ -21,7 +21,7 @@ def add_kernel_hashes(gctx, ovmf, kernel_hash, initrd_hash, cmdline_hash):
     gctx.update_normal_pages(sev_hashes_page_gpa, sev_hashes_page)
 
 
-def update_metadata_pages(gctx, ovmf):
+def update_metadata_pages(gctx, ovmf) -> None:
     for desc in ovmf.metadata_items():
         if desc.page_type == 1:
             gctx.update_zero_pages(desc.gpa, desc.size)
@@ -31,7 +31,7 @@ def update_metadata_pages(gctx, ovmf):
             gctx.update_cpuid_page(desc.gpa)
 
 
-def calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str):
+def calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
     ovmf = OVMF(ovmf_file)
 
     if kernel:
