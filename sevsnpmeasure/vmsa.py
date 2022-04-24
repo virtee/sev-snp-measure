@@ -5,6 +5,7 @@
 
 import ctypes
 from ctypes import c_uint8, c_uint16, c_uint32, c_uint64
+from typing import Iterator
 from .sev_mode import SevMode
 
 
@@ -174,8 +175,12 @@ class VMSA(object):
         if ap_eip:
             self.ap_save_area = VMSA.build_save_area(ap_eip, sev_features)
 
-    def bytes_bsp(self) -> bytes:
-        return bytes(self.bsp_save_area)
-
-    def bytes_ap(self) -> bytes:
-        return bytes(self.ap_save_area)
+    def pages(self, vcpus: int) -> Iterator[bytes]:
+        """
+        Generate VMSA pages
+        """
+        for i in range(vcpus):
+            if i == 0:
+                yield bytes(self.bsp_save_area)
+            else:
+                yield bytes(self.ap_save_area)

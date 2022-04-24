@@ -3,7 +3,7 @@
 ## Scope
 
 Command-line tool and Python library to calculate expected measurement of an
-AMD SEV-SNP guest VM for confidential computing.
+AMD SEV/SEV-ES/SEV-SNP guest VM for confidential computing.
 
 ## Installation
 
@@ -28,23 +28,28 @@ Clone the Github repo and run the script directly from the local directory:
 
 ```
 $ sev-snp-measure --help
-usage: sev-snp-measure [-h] --vcpus VCPUS --ovmf OVMF [--kernel KERNEL] [--initrd INITRD] [--append APPEND]
+usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp} [--vcpus N] --ovmf PATH [--kernel PATH] [--initrd PATH]
+                       [--append PATH]
 
-Calculate AMD SEV-SNP launch measurement
+Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement
 
 optional arguments:
-  -h, --help       show this help message and exit
-  --vcpus VCPUS    Number of vcpus
-  --ovmf OVMF      OVMF file to calculate hash from
-  --kernel KERNEL  Kernel file to calculate hash from
-  --initrd INITRD  Initrd file to calculate hash from (use with --kernel)
-  --append APPEND  Kernel command line to calculate hash from (use with --kernel)
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  -v, --verbose
+  --mode {sev,seves,snp}
+                        Guest mode
+  --vcpus N             Number of guest vcpus
+  --ovmf PATH           OVMF file to calculate hash from
+  --kernel PATH         Kernel file to calculate hash from
+  --initrd PATH         Initrd file to calculate hash from (use with --kernel)
+  --append PATH         Kernel command line to calculate hash from (use with --kernel)
 ```
 
 For example:
 
-    $ sev-snp-measure --vcpus=1 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
-    Calculated SNP guest measurement: 1c8bf2f320add50cb22ca824c17f3fa51a7a4296a4a3113698c2e31b50c2dcfa7e36dea3ebc3a9411061c30acffc6d5a
+    $ sev-snp-measure --mode snp --vcpus=1 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
+    1c8bf2f320add50cb22ca824c17f3fa51a7a4296a4a3113698c2e31b50c2dcfa7e36dea3ebc3a9411061c30acffc6d5a
 
 ## Programmatic usage
 
@@ -53,8 +58,9 @@ another Python application:
 
 ```python3
 from sevsnpmeasure import guest
+from sevsnpmeasure.sev_mode import SevMode
 
-ld = guest.calc_launch_digest(vcpus_num, ovmf_path, kernel_path, initrd_path, cmdline_str)
+ld = guest.calc_launch_digest(SevMode.SEV_SNP, vcpus_num, ovmf_path, kernel_path, initrd_path, cmdline_str)
 print("Calculated measurement:", ld.hex())
 ```
 

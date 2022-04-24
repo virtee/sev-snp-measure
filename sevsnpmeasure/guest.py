@@ -4,24 +4,28 @@
 #
 
 import hashlib
+
 from .gctx import GCTX
 from .ovmf import OVMF
-from .sev_hashes import construct_sev_hashes_page
+from .sev_hashes import SevHashes
 from .vmsa import VMSA
 from .sev_mode import SevMode
 
 PAGE_MASK = 0xfff
 
 
-def add_kernel_hashes(gctx, ovmf, kernel_hash, initrd_hash, cmdline_hash) -> None:
-    sev_hashes_table_gpa = ovmf.sev_hashes_table_gpa()
-    offset = sev_hashes_table_gpa & PAGE_MASK
-    sev_hashes_page_gpa = sev_hashes_table_gpa & ~PAGE_MASK
-    sev_hashes_page = construct_sev_hashes_page(offset, kernel_hash, initrd_hash, cmdline_hash)
-    gctx.update_normal_pages(sev_hashes_page_gpa, sev_hashes_page)
+def calc_launch_digest(mode: SevMode, vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+    if mode == SevMode.SEV_SNP:
+        return snp_calc_launch_digest(vcpus, ovmf_file, kernel, initrd, append)
+    elif mode == SevMode.SEV_ES:
+        return seves_calc_launch_digest(vcpus, ovmf_file, kernel, initrd, append)
+    elif mode == SevMode.SEV:
+        return sev_calc_launch_digest(ovmf_file, kernel, initrd, append)
+    else:
+        raise ValueError("unknown mode")
 
 
-def update_metadata_pages(gctx, ovmf) -> None:
+def snp_update_metadata_pages(gctx, ovmf) -> None:
     for desc in ovmf.metadata_items():
         if desc.page_type == 1:
             gctx.update_zero_pages(desc.gpa, desc.size)
@@ -31,40 +35,45 @@ def update_metadata_pages(gctx, ovmf) -> None:
             gctx.update_cpuid_page(desc.gpa)
 
 
-def calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+def snp_calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
     ovmf = OVMF(ovmf_file)
-
-    if kernel:
-        with open(kernel, 'rb') as fh:
-            kernel_hash = hashlib.sha256(fh.read()).digest()
-
-    if initrd:
-        with open(initrd, 'rb') as fh:
-            initrd_data = fh.read()
-    else:
-        initrd_data = b''
-    initrd_hash = hashlib.sha256(initrd_data).digest()
-
-    if append:
-        cmdline = append.encode() + b'\x00'
-    else:
-        cmdline = b'\x00'
-    cmdline_hash = hashlib.sha256(cmdline).digest()
 
     gctx = GCTX()
     gctx.update_normal_pages(ovmf.gpa(), ovmf.data())
 
     if kernel:
-        add_kernel_hashes(gctx, ovmf, kernel_hash, initrd_hash, cmdline_hash)
+        sev_hashes_table_gpa = ovmf.sev_hashes_table_gpa()
+        offset_in_page = sev_hashes_table_gpa & PAGE_MASK
+        sev_hashes_page_gpa = sev_hashes_table_gpa & ~PAGE_MASK
+        sev_hashes = SevHashes(kernel, initrd, append)
+        sev_hashes_page = sev_hashes.construct_page(offset_in_page)
+        gctx.update_normal_pages(sev_hashes_page_gpa, sev_hashes_page)
 
-    update_metadata_pages(gctx, ovmf)
+    snp_update_metadata_pages(gctx, ovmf)
 
     vmsa = VMSA(SevMode.SEV_SNP, ovmf.sev_es_reset_eip())
-    for i in range(vcpus):
-        if i == 0:
-            vmsa_page = vmsa.bytes_bsp()
-        else:
-            vmsa_page = vmsa.bytes_ap()
+    for vmsa_page in vmsa.pages(vcpus):
         gctx.update_vmsa_page(vmsa_page)
 
     return gctx.ld()
+
+
+def seves_calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+    ovmf = OVMF(ovmf_file)
+    launch_hash = hashlib.sha256(ovmf.data())
+    if kernel:
+        sev_hashes_table = SevHashes(kernel, initrd, append).construct_table()
+        launch_hash.update(sev_hashes_table)
+    vmsa = VMSA(SevMode.SEV_ES, ovmf.sev_es_reset_eip())
+    for vmsa_page in vmsa.pages(vcpus):
+        launch_hash.update(vmsa_page)
+    return launch_hash.digest()
+
+
+def sev_calc_launch_digest(ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+    ovmf = OVMF(ovmf_file)
+    launch_hash = hashlib.sha256(ovmf.data())
+    if kernel:
+        sev_hashes_table = SevHashes(kernel, initrd, append).construct_table()
+        launch_hash.update(sev_hashes_table)
+    return launch_hash.digest()
