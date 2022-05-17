@@ -4,6 +4,7 @@
 #
 
 import argparse
+import base64
 import sys
 
 from sevsnpmeasure import guest
@@ -39,6 +40,7 @@ def main() -> int:
                         help='Initrd file to calculate hash from (use with --kernel)')
     parser.add_argument('--append', metavar='CMDLINE',
                         help='Kernel command line to calculate hash from (use with --kernel)')
+    parser.add_argument('--output-format', choices=['hex', 'base64'], help='Measurement output format', default='hex')
     args = parser.parse_args()
 
     if args.mode != 'sev' and args.vcpus is None:
@@ -57,10 +59,16 @@ def main() -> int:
 
     sev_mode = SevMode.from_str(args.mode)
     ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf, args.kernel, args.initrd, args.append)
+
+    if args.output_format == "hex":
+        measurement = ld.hex()
+    elif args.output_format == "base64":
+        measurement = base64.b64encode(ld).decode()
+
     if args.verbose:
-        print(f"Calculated {sev_mode.name} guest measurement: {ld.hex()}")
+        print(f"Calculated {sev_mode.name} guest measurement: {measurement}")
     else:
-        print(ld.hex())
+        print(measurement)
     return 0
 
 

@@ -31,7 +31,7 @@ $ sev-snp-measure --help
 usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp} [--vcpus N]
                        [--vcpu-type CPUTYPE] [--vcpu-sig VALUE] [--vcpu-family FAMILY]
                        [--vcpu-model MODEL] [--vcpu-stepping STEPPING] --ovmf PATH [--kernel PATH]
-                       [--initrd PATH] [--append CMDLINE]
+                       [--initrd PATH] [--append CMDLINE] [--output-format {hex,base64}]
 
 Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement
 
@@ -54,6 +54,8 @@ optional arguments:
   --kernel PATH         Kernel file to calculate hash from
   --initrd PATH         Initrd file to calculate hash from (use with --kernel)
   --append CMDLINE      Kernel command line to calculate hash from (use with --kernel)
+  --output-format {hex,base64}
+                        Measurement output format
 ```
 
 For example:
