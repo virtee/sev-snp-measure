@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.0.3 - 2022-05-17
+
+### Added
 - Add `--output-format={hex,base64}` to control the measurement output format
   (default is hex)
 - For SEV-ES and SNP: Add guest CPU type choice using `--vcpu-type` or
