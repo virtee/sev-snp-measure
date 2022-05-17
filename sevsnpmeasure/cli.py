@@ -25,7 +25,7 @@ def main() -> int:
                         help='Kernel file to calculate hash from')
     parser.add_argument('--initrd', metavar='PATH',
                         help='Initrd file to calculate hash from (use with --kernel)')
-    parser.add_argument('--append', metavar='PATH',
+    parser.add_argument('--append', metavar='CMDLINE',
                         help='Kernel command line to calculate hash from (use with --kernel)')
     args = parser.parse_args()
 
