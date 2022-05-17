@@ -14,11 +14,12 @@ from .sev_mode import SevMode
 PAGE_MASK = 0xfff
 
 
-def calc_launch_digest(mode: SevMode, vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+def calc_launch_digest(mode: SevMode, vcpus: int, vcpu_sig: int, ovmf_file: str,
+                       kernel: str, initrd: str, append: str) -> bytes:
     if mode == SevMode.SEV_SNP:
-        return snp_calc_launch_digest(vcpus, ovmf_file, kernel, initrd, append)
+        return snp_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append)
     elif mode == SevMode.SEV_ES:
-        return seves_calc_launch_digest(vcpus, ovmf_file, kernel, initrd, append)
+        return seves_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append)
     elif mode == SevMode.SEV:
         return sev_calc_launch_digest(ovmf_file, kernel, initrd, append)
     else:
@@ -35,7 +36,7 @@ def snp_update_metadata_pages(gctx, ovmf) -> None:
             gctx.update_cpuid_page(desc.gpa)
 
 
-def snp_calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
     ovmf = OVMF(ovmf_file)
 
     gctx = GCTX()
@@ -51,20 +52,20 @@ def snp_calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str,
 
     snp_update_metadata_pages(gctx, ovmf)
 
-    vmsa = VMSA(SevMode.SEV_SNP, ovmf.sev_es_reset_eip())
+    vmsa = VMSA(SevMode.SEV_SNP, ovmf.sev_es_reset_eip(), vcpu_sig)
     for vmsa_page in vmsa.pages(vcpus):
         gctx.update_vmsa_page(vmsa_page)
 
     return gctx.ld()
 
 
-def seves_calc_launch_digest(vcpus: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+def seves_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
     ovmf = OVMF(ovmf_file)
     launch_hash = hashlib.sha256(ovmf.data())
     if kernel:
         sev_hashes_table = SevHashes(kernel, initrd, append).construct_table()
         launch_hash.update(sev_hashes_table)
-    vmsa = VMSA(SevMode.SEV_ES, ovmf.sev_es_reset_eip())
+    vmsa = VMSA(SevMode.SEV_ES, ovmf.sev_es_reset_eip(), vcpu_sig)
     for vmsa_page in vmsa.pages(vcpus):
         launch_hash.update(vmsa_page)
     return launch_hash.digest()

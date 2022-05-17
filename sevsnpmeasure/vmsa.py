@@ -140,7 +140,7 @@ class VMSA(object):
     BSP_EIP = 0xfffffff0
 
     @staticmethod
-    def build_save_area(eip, sev_features):
+    def build_save_area(eip: int, sev_features: int, vcpu_sig: int):
         return SevEsSaveArea(
             es=VmcbSeg(0, 0x93, 0xffff, 0),
             cs=VmcbSeg(0xf000, 0x9b, 0xffff, eip & 0xffff0000),
@@ -160,20 +160,20 @@ class VMSA(object):
             rflags=0x2,
             rip=eip & 0xffff,
             g_pat=0x7040600070406,
-            rdx=0x800f12,
+            rdx=vcpu_sig,
             sev_features=sev_features,
             xcr0=0x1,
         )
 
-    def __init__(self, sev_mode: SevMode, ap_eip: int = None):
+    def __init__(self, sev_mode: SevMode, ap_eip: int, vcpu_sig: int):
         if sev_mode == SevMode.SEV_SNP:
             sev_features = 0x1
         else:
             sev_features = 0x0
 
-        self.bsp_save_area = VMSA.build_save_area(self.BSP_EIP, sev_features)
+        self.bsp_save_area = VMSA.build_save_area(self.BSP_EIP, sev_features, vcpu_sig)
         if ap_eip:
-            self.ap_save_area = VMSA.build_save_area(ap_eip, sev_features)
+            self.ap_save_area = VMSA.build_save_area(ap_eip, sev_features, vcpu_sig)
 
     def pages(self, vcpus: int) -> Iterator[bytes]:
         """

@@ -5,6 +5,7 @@
 
 import unittest
 from sevsnpmeasure import guest
+from sevsnpmeasure import vcpu_types
 from sevsnpmeasure.sev_mode import SevMode
 
 
@@ -14,6 +15,7 @@ class TestGuest(unittest.TestCase):
         ld = guest.calc_launch_digest(
                 SevMode.SEV_SNP,
                 1,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
                 "tests/fixtures/ovmf_suffix.bin",
                 "/dev/null",
                 "/dev/null",
@@ -27,6 +29,7 @@ class TestGuest(unittest.TestCase):
         ld = guest.calc_launch_digest(
                 SevMode.SEV_ES,
                 1,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
                 "tests/fixtures/ovmf_suffix.bin",
                 "/dev/null",
                 "/dev/null",
@@ -39,6 +42,7 @@ class TestGuest(unittest.TestCase):
         ld = guest.calc_launch_digest(
                 SevMode.SEV,
                 1,
+                None,
                 "tests/fixtures/ovmf_suffix.bin",
                 "/dev/null",
                 "/dev/null",
