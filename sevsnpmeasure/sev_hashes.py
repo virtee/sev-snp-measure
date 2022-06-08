@@ -3,12 +3,51 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import ctypes
+from ctypes import c_uint8, c_uint16
 import hashlib
 import uuid
 
 
-def guid_to_le(guid_str):
-    return uuid.UUID("{" + guid_str + "}").bytes_le
+Sha256Hash = c_uint8 * hashlib.sha256().digest_size
+
+
+class GuidLe(ctypes.Array):
+    _length_ = 16
+    _type_ = c_uint8
+
+    @staticmethod
+    def from_str(guid_str: str):
+        return GuidLe.from_buffer_copy(uuid.UUID("{" + guid_str + "}").bytes_le)
+
+
+class SevHashTableEntry(ctypes.LittleEndianStructure):
+    _pack_ = 1
+    _fields_ = [
+        ("guid", GuidLe),
+        ("length", c_uint16),
+        ("hash", Sha256Hash),
+    ]
+
+
+class SevHashTable(ctypes.LittleEndianStructure):
+    _pack_ = 1
+    _fields_ = [
+        ("guid", GuidLe),
+        ("length", c_uint16),
+        ("cmdline", SevHashTableEntry),
+        ("initrd", SevHashTableEntry),
+        ("kernel", SevHashTableEntry),
+    ]
+
+
+class PaddedSevHashTable(ctypes.LittleEndianStructure):
+    _PADDING_SIZE = ((ctypes.sizeof(SevHashTable) + 15) & ~15) - ctypes.sizeof(SevHashTable)
+    _pack_ = 1
+    _fields_ = [
+        ("ht", SevHashTable),
+        ("padding", c_uint8 * _PADDING_SIZE),
+    ]
 
 
 class SevHashes:
@@ -39,38 +78,31 @@ class SevHashes:
     # Generate the SEV hashes area - this must be *identical* to the way QEMU
     # generates this info in order for the measurement to match.
     #
-    def construct_table(self):
-        # TODO use struct.pack
-        entries = 3
-        ht_len = 16 + 2 + entries * (16 + 2 + 32)
-        ht_len_aligned = (ht_len + 15) & ~15
-        ht = bytearray(ht_len_aligned)
+    def construct_table(self) -> bytes:
+        padded_ht = PaddedSevHashTable(
+            ht=SevHashTable(
+                guid=GuidLe.from_str(self.SEV_HASH_TABLE_HEADER_GUID),
+                length=ctypes.sizeof(SevHashTable),
+                cmdline=SevHashTableEntry(
+                    guid=GuidLe.from_str(self.SEV_CMDLINE_ENTRY_GUID),
+                    length=ctypes.sizeof(SevHashTableEntry),
+                    hash=Sha256Hash.from_buffer_copy(self.cmdline_hash),
+                ),
+                initrd=SevHashTableEntry(
+                    guid=GuidLe.from_str(self.SEV_INITRD_ENTRY_GUID),
+                    length=ctypes.sizeof(SevHashTableEntry),
+                    hash=Sha256Hash.from_buffer_copy(self.initrd_hash),
+                ),
+                kernel=SevHashTableEntry(
+                    guid=GuidLe.from_str(self.SEV_KERNEL_ENTRY_GUID),
+                    length=ctypes.sizeof(SevHashTableEntry),
+                    hash=Sha256Hash.from_buffer_copy(self.kernel_hash),
+                ),
+            )
+        )
+        return bytes(padded_ht)
 
-        # Table header
-        ht[0:16] = guid_to_le(self.SEV_HASH_TABLE_HEADER_GUID)
-        ht[16:18] = ht_len.to_bytes(2, byteorder='little')
-
-        # Entry 0: kernel command-line
-        e = 18
-        ht[e:e+16] = guid_to_le(self.SEV_CMDLINE_ENTRY_GUID)
-        ht[e+16:e+18] = (16 + 2 + 32).to_bytes(2, byteorder='little')
-        ht[e+18:e+18+32] = self.cmdline_hash
-
-        # Entry 1: initrd
-        e = e+18+32
-        ht[e:e+16] = guid_to_le(self.SEV_INITRD_ENTRY_GUID)
-        ht[e+16:e+18] = (16 + 2 + 32).to_bytes(2, byteorder='little')
-        ht[e+18:e+18+32] = self.initrd_hash
-
-        # Entry 2: kernel
-        e = e+18+32
-        ht[e:e+16] = guid_to_le(self.SEV_KERNEL_ENTRY_GUID)
-        ht[e+16:e+18] = (16 + 2 + 32).to_bytes(2, byteorder='little')
-        ht[e+18:e+18+32] = self.kernel_hash
-
-        return ht
-
-    def construct_page(self, offset):
+    def construct_page(self, offset: int) -> bytes:
         assert offset < 4096
         hashes_table = self.construct_table()
         page = bytes(offset) + hashes_table + bytes(4096 - offset - len(hashes_table))
