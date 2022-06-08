@@ -1,4 +1,10 @@
 def cpu_sig(family: int, model: int, stepping: int) -> int:
+    """Compute the 32-bit CPUID signature from family, model, and stepping.
+
+    This computation is described in AMD's CPUID Specification, publication #25481
+    https://www.amd.com/system/files/TechDocs/25481.pdf
+    See section: CPUID Fn0000_0001_EAX Family, Model, Stepping Identifiers
+    """
     if family > 0xf:
         family_low = 0xf
         family_high = (family - 0x0f) & 0xff
