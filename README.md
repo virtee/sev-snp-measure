@@ -98,6 +98,7 @@ example, the following 3 invocations are identical:
 * libvirt tools: [virt-dom-sev-validate](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-validate.py),
   [virt-dom-sev-vmsa-tool](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-vmsa-tool.py)
 * [sev Rust crate](https://github.com/virtee/sev)
+* [snp-digest-rs](https://github.com/slp/snp-digest-rs)
 * [AMD SEV-Tool](https://github.com/AMDESE/sev-tool)
 
 ## Notes
