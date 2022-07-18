@@ -6,7 +6,7 @@
 import hashlib
 
 from .gctx import GCTX
-from .ovmf import OVMF
+from .ovmf import OVMF, SectionType
 from .sev_hashes import SevHashes
 from .vmsa import VMSA
 from .sev_mode import SevMode
@@ -28,12 +28,14 @@ def calc_launch_digest(mode: SevMode, vcpus: int, vcpu_sig: int, ovmf_file: str,
 
 def snp_update_metadata_pages(gctx, ovmf) -> None:
     for desc in ovmf.metadata_items():
-        if desc.page_type == 1:
+        if desc.section_type() == SectionType.SNP_SEC_MEM:
             gctx.update_zero_pages(desc.gpa, desc.size)
-        elif desc.page_type == 2:
+        elif desc.section_type() == SectionType.SNP_SECRETS:
             gctx.update_secrets_page(desc.gpa)
-        elif desc.page_type == 3:
+        elif desc.section_type() == SectionType.CPUID:
             gctx.update_cpuid_page(desc.gpa)
+        else:
+            raise ValueError("unknown OVMF metadata section type")
 
 
 def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:

@@ -3,11 +3,46 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import collections
-import struct
+import ctypes
+from ctypes import c_uint8, c_uint32
+from enum import Enum
 import uuid
 
-OvmfSevMetadataDesc = collections.namedtuple('OvmfSevMetadataDesc', ['gpa', 'size', 'page_type'])
+
+# Types of sections declared by OVMF SEV Metadata, as appears in:
+# https://github.com/tianocore/edk2/blob/edk2-stable202205/OvmfPkg/ResetVector/X64/OvmfSevMetadata.asm
+class SectionType(Enum):
+    SNP_SEC_MEM = 1
+    SNP_SECRETS = 2
+    CPUID = 3
+
+
+class OvmfSevMetadataSectionDesc(ctypes.LittleEndianStructure):
+    _pack_ = 1
+    _fields_ = [
+        ("gpa", c_uint32),
+        ("size", c_uint32),
+        ("section_type_int", c_uint32),
+    ]
+
+    def section_type(self) -> SectionType:
+        return SectionType(self.section_type_int)
+
+
+class OvmfSevMetadataHeader(ctypes.LittleEndianStructure):
+    _pack_ = 1
+    _fields_ = [
+        ("signature", c_uint8 * 4),
+        ("size", c_uint32),
+        ("version", c_uint32),
+        ("num_items", c_uint32),
+    ]
+
+    def verify(self):
+        if bytes(self.signature) != b'ASEV':
+            raise RuntimeError("Wrong SEV metadata signature")
+        if self.version != 1:
+            raise RuntimeError("Wrong SEV metadata version")
 
 
 class OVMF(object):
@@ -75,19 +110,12 @@ class OVMF(object):
         if self.OVMF_SEV_META_DATA_GUID not in self._table:
             return
         entry = self._table[self.OVMF_SEV_META_DATA_GUID]
-        offset = int.from_bytes(entry[:4], byteorder='little')
-        start = len(self._data)-offset
-        metadata_header = self._data[start:start+16]
-        # TODO use struct.unpack
-        if metadata_header[:4] != b'ASEV':
-            raise RuntimeError("Wrong SEV metadata signature")
-        metadata_len = int.from_bytes(metadata_header[4:8], byteorder='little')
-        _ = int.from_bytes(metadata_header[8:12], byteorder='little')  # metadata version
-        num_desc = int.from_bytes(metadata_header[12:16], byteorder='little')
-        all_desc_bytes = self._data[start+16:start+metadata_len]
-        desc_bytes_size = struct.calcsize("<III")
-        for i in range(num_desc):
-            desc_bytes = all_desc_bytes[i*desc_bytes_size:(i+1)*desc_bytes_size]
-            gpa, size, page_type = struct.unpack("<III", desc_bytes)
-            item = OvmfSevMetadataDesc(gpa, size, page_type)
+        offset_from_end = int.from_bytes(entry[:4], byteorder='little')
+        start = len(self._data) - offset_from_end
+        header = OvmfSevMetadataHeader.from_buffer_copy(self._data, start)
+        header.verify()
+        items = self._data[start+ctypes.sizeof(OvmfSevMetadataHeader):start+header.size]
+        for i in range(header.num_items):
+            offset = i * ctypes.sizeof(OvmfSevMetadataSectionDesc)
+            item = OvmfSevMetadataSectionDesc.from_buffer_copy(items, offset)
             self._metadata_items.append(item)
