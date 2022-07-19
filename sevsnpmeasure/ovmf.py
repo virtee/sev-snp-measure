@@ -4,7 +4,7 @@
 #
 
 import ctypes
-from ctypes import c_uint8, c_uint32
+from ctypes import c_uint8, c_uint16, c_uint32
 from enum import Enum
 import uuid
 
@@ -43,6 +43,14 @@ class OvmfSevMetadataHeader(ctypes.LittleEndianStructure):
             raise RuntimeError("Wrong SEV metadata signature")
         if self.version != 1:
             raise RuntimeError("Wrong SEV metadata version")
+
+
+class OvmfFooterTableEntry(ctypes.LittleEndianStructure):
+    _pack_ = 1
+    _fields_ = [
+        ("size", c_uint16),
+        ("guid", c_uint8 * 16),
+    ]
 
 
 class OVMF(object):
@@ -85,25 +93,25 @@ class OVMF(object):
     def _parse_footer_table(self) -> None:
         self._table = {}
         size = len(self._data)
-        footer_guid = self._data[size-48:size-32]
+        entry_header_size = ctypes.sizeof(OvmfFooterTableEntry)
+        # The OVMF table ends 32 bytes before the end of the firmware binary
+        start_of_footer_table = size - 32 - entry_header_size
+        footer = OvmfFooterTableEntry.from_buffer_copy(self._data[start_of_footer_table:])
         expected_footer_guid = uuid.UUID("{" + self.OVMF_TABLE_FOOTER_GUID + "}").bytes_le
-        if footer_guid != expected_footer_guid:
+        if bytes(footer.guid) != expected_footer_guid:
             return
-        # TODO use struct.unpack
-        full_table_size = int.from_bytes(self._data[size-50:size-48], byteorder='little')
-        table_size = full_table_size - 16 - 2
+        table_size = footer.size - entry_header_size
         if table_size < 0:
             return
-        table_bytes = self._data[size-50-table_size:size-50]
-        while len(table_bytes) >= (16 + 2):
-            entry_guid = table_bytes[len(table_bytes)-16:]
-            entry_size = int.from_bytes(table_bytes[len(table_bytes)-18:len(table_bytes)-16], byteorder='little')
-            if entry_size < (16 + 2):
+        table_bytes = self._data[start_of_footer_table-table_size:start_of_footer_table]
+        while len(table_bytes) >= entry_header_size:
+            entry = OvmfFooterTableEntry.from_buffer_copy(table_bytes[-entry_header_size:])
+            if entry.size < entry_header_size:
                 raise RuntimeError("Invalid entry size")
-            entry_data = table_bytes[len(table_bytes)-entry_size:len(table_bytes)-18]
-            entry_guid_str = str(uuid.UUID(bytes_le=entry_guid))
+            entry_guid_str = str(uuid.UUID(bytes_le=bytes(entry.guid)))
+            entry_data = table_bytes[-entry.size:-entry_header_size]
             self._table[entry_guid_str] = entry_data
-            table_bytes = table_bytes[:len(table_bytes)-entry_size]
+            table_bytes = table_bytes[:-entry.size]
 
     def _parse_sev_metadata(self) -> None:
         self._metadata_items = []
