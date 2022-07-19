@@ -159,7 +159,7 @@ class VMSA(object):
             dr6=0xffff0ff0,
             rflags=0x2,
             rip=eip & 0xffff,
-            g_pat=0x7040600070406,
+            g_pat=0x7040600070406,  # PAT MSR: See AMD APM Vol 2, Section A.3
             rdx=vcpu_sig,
             sev_features=sev_features,
             xcr0=0x1,
