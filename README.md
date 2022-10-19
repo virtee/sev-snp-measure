@@ -2,8 +2,10 @@
 
 ## Scope
 
-Command-line tool and Python library to calculate expected measurement of an
-AMD SEV/SEV-ES/SEV-SNP guest VM for confidential computing.
+Command-line tool and Python library to calculate an expected launch digest
+for an AMD SEV/SEV-ES guest VM, and for calculating the "MEASUREMENT" field
+located on an [SNP attestation report](https://www.amd.com/system/files/TechDocs/56860.pdf#page=44) for an AMD SEV-SNP guest VM, for
+confidential computing.
 
 ## Installation
 
@@ -33,7 +35,7 @@ usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp} [--vcpus N]
                        [--vcpu-model MODEL] [--vcpu-stepping STEPPING] --ovmf PATH [--kernel PATH]
                        [--initrd PATH] [--append CMDLINE] [--output-format {hex,base64}]
 
-Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement
+Calculate AMD SEV/SEV-ES/SEV-SNP guest launch digest or reported SNP measurement
 
 optional arguments:
   -h, --help            show this help message and exit
