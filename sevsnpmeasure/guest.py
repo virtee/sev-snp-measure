@@ -4,6 +4,7 @@
 #
 
 import hashlib
+from typing import Optional
 
 from .gctx import GCTX
 from .ovmf import OVMF, SectionType
@@ -29,7 +30,18 @@ def calc_launch_digest(mode: SevMode, vcpus: int, vcpu_sig: int, ovmf_file: str,
         raise ValueError("unknown mode")
 
 
-def snp_update_metadata_pages(gctx, ovmf) -> None:
+def snp_update_kernel_hashes(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHashes], gpa: int, size: int) -> None:
+    if sev_hashes:
+        sev_hashes_table_gpa = ovmf.sev_hashes_table_gpa()
+        offset_in_page = sev_hashes_table_gpa & PAGE_MASK
+        sev_hashes_page = sev_hashes.construct_page(offset_in_page)
+        assert size == len(sev_hashes_page)
+        gctx.update_normal_pages(gpa, sev_hashes_page)
+    else:
+        gctx.update_zero_pages(gpa, size)
+
+
+def snp_update_metadata_pages(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHashes]) -> None:
     for desc in ovmf.metadata_items():
         if desc.section_type() == SectionType.SNP_SEC_MEM:
             gctx.update_zero_pages(desc.gpa, desc.size)
@@ -37,6 +49,8 @@ def snp_update_metadata_pages(gctx, ovmf) -> None:
             gctx.update_secrets_page(desc.gpa)
         elif desc.section_type() == SectionType.CPUID:
             gctx.update_cpuid_page(desc.gpa)
+        elif desc.section_type() == SectionType.SNP_KERNEL_HASHES:
+            snp_update_kernel_hashes(gctx, ovmf, sev_hashes, desc.gpa, desc.size)
         else:
             raise ValueError("unknown OVMF metadata section type")
 
@@ -63,15 +77,11 @@ def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str,
     else:
         gctx.update_normal_pages(ovmf.gpa(), ovmf.data())
 
+    sev_hashes = None
     if kernel:
-        sev_hashes_table_gpa = ovmf.sev_hashes_table_gpa()
-        offset_in_page = sev_hashes_table_gpa & PAGE_MASK
-        sev_hashes_page_gpa = sev_hashes_table_gpa & ~PAGE_MASK
         sev_hashes = SevHashes(kernel, initrd, append)
-        sev_hashes_page = sev_hashes.construct_page(offset_in_page)
-        gctx.update_normal_pages(sev_hashes_page_gpa, sev_hashes_page)
 
-    snp_update_metadata_pages(gctx, ovmf)
+    snp_update_metadata_pages(gctx, ovmf, sev_hashes)
 
     vmsa = VMSA(SevMode.SEV_SNP, ovmf.sev_es_reset_eip(), vcpu_sig)
     for vmsa_page in vmsa.pages(vcpus):
