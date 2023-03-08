@@ -1,0 +1,2 @@
+cryptography==39.0.1
+types-cryptography
