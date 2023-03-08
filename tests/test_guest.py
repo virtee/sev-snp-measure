@@ -16,7 +16,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV_SNP,
                 1,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "fixtures/ovmf_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
@@ -30,7 +30,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV_ES,
                 1,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "fixtures/ovmf_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
@@ -43,7 +43,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV,
                 1,
                 None,
-                "tests/fixtures/ovmf_suffix.bin",
+                "fixtures/ovmf_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
