@@ -26,6 +26,7 @@ Clone the Github repo and run the script directly from the local directory:
 
 ## Command-line usage
 
+### sev-snp-measure
 ```
 $ sev-snp-measure --help
 usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp} [--vcpus N]
@@ -63,19 +64,35 @@ For example:
     $ sev-snp-measure --mode snp --vcpus=1 --vcpu-type=EPYC-v4 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
     1c8bf2f320add50cb22ca824c17f3fa51a7a4296a4a3113698c2e31b50c2dcfa7e36dea3ebc3a9411061c30acffc6d5a
 
+### snp-create-id-block
+```
+$ snp-create-id-block --help
+usage: snp-create-id-block [-h] [--measurement VALUE] [--idkey PATH] [--authorkey PATH]
+
+Calculate AMD SEV-SNP guest id block
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --measurement VALUE  Guest launch measurement
+  --idkey PATH         id private key file
+  --authorkey PATH     author private key file
+```
 ## Programmatic usage
 
 After installing the `sev-snp-measure` package with pip, you can call it from
 another Python application:
 
 ```python3
-from sevsnpmeasure import guest
+from sevsnpmeasure import guest,id_block
 from sevsnpmeasure import vcpu_types
 from sevsnpmeasure.sev_mode import SevMode
 
 ld = guest.calc_launch_digest(SevMode.SEV_SNP, vcpus_num, vcpu_types.CPU_SIGS["EPYC-v4"],
                               ovmf_path, kernel_path, initrd_path, cmdline_str)
 print("Calculated measurement:", ld.hex())
+
+block = id_block.snp_calc_id_block(ld,"id_key_file","author_key_file")
+print("Calculated id block in base64", block)
 ```
 
 ## Choosing guest CPU type
