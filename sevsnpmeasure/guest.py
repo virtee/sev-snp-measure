@@ -15,9 +15,12 @@ PAGE_MASK = 0xfff
 
 
 def calc_launch_digest(mode: SevMode, vcpus: int, vcpu_sig: int, ovmf_file: str,
-                       kernel: str, initrd: str, append: str) -> bytes:
+                       kernel: str, initrd: str, append: str, snp_ovmf_hash_str: str = '') -> bytes:
+    if snp_ovmf_hash_str and mode != SevMode.SEV_SNP:
+        raise ValueError("SNP OVMF hash only works with SNP")
+
     if mode == SevMode.SEV_SNP:
-        return snp_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append)
+        return snp_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, snp_ovmf_hash_str)
     elif mode == SevMode.SEV_ES:
         return seves_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append)
     elif mode == SevMode.SEV:
@@ -38,11 +41,26 @@ def snp_update_metadata_pages(gctx, ovmf) -> None:
             raise ValueError("unknown OVMF metadata section type")
 
 
-def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: str, initrd: str, append: str) -> bytes:
+def calc_snp_ovmf_hash(ovmf_file: str) -> bytes:
     ovmf = OVMF(ovmf_file)
 
     gctx = GCTX()
     gctx.update_normal_pages(ovmf.gpa(), ovmf.data())
+    return gctx.ld()
+
+
+def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: str, initrd: str, append: str, ovmf_hash_str: str) -> bytes:
+
+    gctx = GCTX()
+    ovmf = OVMF(ovmf_file)
+
+    # Allow users to provide a precalculated OVMF hash.
+    # Ignores the contents of the OVMF file in front of us.
+    if ovmf_hash_str:
+        ovmf_hash = bytearray.fromhex(ovmf_hash_str)
+        gctx = GCTX(seed = ovmf_hash)
+    else:
+        gctx.update_normal_pages(ovmf.gpa(), ovmf.data())
 
     if kernel:
         sev_hashes_table_gpa = ovmf.sev_hashes_table_gpa()

@@ -23,7 +23,7 @@ def main() -> int:
                                      description='Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement')
     parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}')
     parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('--mode', choices=['sev', 'seves', 'snp'], help='Guest mode', required=True)
+    parser.add_argument('--mode', choices=['sev', 'seves', 'snp', 'snp:ovmf-hash'], help='Guest mode', required=True)
     parser.add_argument('--vcpus', metavar='N', type=int, help='Number of guest vcpus', default=None)
     parser.add_argument('--vcpu-type', metavar='CPUTYPE', choices=list(vcpu_types.CPU_SIGS.keys()),
                         help=f"Type of guest vcpu ({', '.join(vcpu_types.CPU_SIGS.keys())})",
@@ -41,7 +41,12 @@ def main() -> int:
     parser.add_argument('--append', metavar='CMDLINE',
                         help='Kernel command line to calculate hash from (use with --kernel)')
     parser.add_argument('--output-format', choices=['hex', 'base64'], help='Measurement output format', default='hex')
+    parser.add_argument('--snp-ovmf-hash', metavar='HASH', help='Precalculated hash of the OVMF binary (hex string)')
     args = parser.parse_args()
+
+    if args.mode == 'snp:ovmf-hash':
+        print(guest.calc_snp_ovmf_hash(args.ovmf).hex())
+        return 0
 
     if args.mode != 'sev' and args.vcpus is None:
         parser.error(f"missing --vcpus N in guest mode '{args.mode}'")
@@ -58,7 +63,7 @@ def main() -> int:
             parser.error(f"missing --vcpu-type or --vcpu-sig or --vcpu-family in guest mode '{args.mode}'")
 
     sev_mode = SevMode.from_str(args.mode)
-    ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf, args.kernel, args.initrd, args.append)
+    ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf, args.kernel, args.initrd, args.append, args.snp_ovmf_hash)
 
     if args.output_format == "hex":
         measurement = ld.hex()

@@ -28,10 +28,11 @@ Clone the Github repo and run the script directly from the local directory:
 
 ```
 $ sev-snp-measure --help
-usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp} [--vcpus N]
+usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp,snp:ovmf-hash} [--vcpus N]
                        [--vcpu-type CPUTYPE] [--vcpu-sig VALUE] [--vcpu-family FAMILY]
                        [--vcpu-model MODEL] [--vcpu-stepping STEPPING] --ovmf PATH [--kernel PATH]
                        [--initrd PATH] [--append CMDLINE] [--output-format {hex,base64}]
+                       [--snp-ovmf-hash HASH]
 
 Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement
 
@@ -39,7 +40,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   -v, --verbose
-  --mode {sev,seves,snp}
+  --mode {sev,seves,snp,snp:ovmf-hash}
                         Guest mode
   --vcpus N             Number of guest vcpus
   --vcpu-type CPUTYPE   Type of guest vcpu (EPYC, EPYC-v1, EPYC-v2, EPYC-IBPB, EPYC-v3, EPYC-v4,
@@ -56,6 +57,7 @@ optional arguments:
   --append CMDLINE      Kernel command line to calculate hash from (use with --kernel)
   --output-format {hex,base64}
                         Measurement output format
+  --snp-ovmf-hash HASH  Precalculated hash of the OVMF binary (hex string)
 ```
 
 For example:
@@ -92,6 +94,26 @@ example, the following 3 invocations are identical:
 1. `sev-snp-measure --vcpu-type=EPYC-v4 ...`
 2. `sev-snp-measure --vcpu-sig=0x800f12 ...`
 3. `sev-snp-measure --vcpu-family=23 --vcpu-model=1 --vcpu-stepping=2 ...`
+
+## Precalculated OVMF hashes
+
+The SEV-SNP digest gets generated in multiple steps that each have a digest as output. With that digest output, you can stop at any of these steps and continue generation of the full digest later. These are the steps:
+
+1. OVMF
+2. (optional) -kernel, -initrd, -append arguments
+3. Initial state of all vCPUs
+
+In situations where only minor OVMF changes happen, you may not want to copy the full OVMF binary to the validation system. In these situations, you can cut digest calculation after the `OVMF` step and use its hash instead of the full binary.
+
+To generate a hash, use the `--mode snp:ovmf-hash` parameter:
+
+    $ sev-snp-measure --mode snp:ovmf-hash --ovmf OVMF.fd
+    cab7e085874b3acfdbe2d96dcaa3125111f00c35c6fc9708464c2ae74bfdb048a198cb9a9ccae0b3e5e1a33f5f249819
+
+On a different machine that only has access to an older but compatible OVMF binary, you can then ingest the hash again to generate a full measurement:
+
+    $ sev-snp-measure --mode snp --vcpus=1 --vcpu-type=EPYC-v4 --ovmf=OVMF.fd.old --ovmf-hash cab7e[...]
+    d52697c3e056fb8d698d19cc29adfbed5a8ec9170cb9eb63c2ac957d22b4eb647e25780162036d063a0cf418b8830acc
 
 ## Related projects
 
