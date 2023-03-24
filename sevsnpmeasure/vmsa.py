@@ -7,6 +7,8 @@ import ctypes
 from ctypes import c_uint8, c_uint16, c_uint32, c_uint64
 from typing import Iterator
 from .sev_mode import SevMode
+from sevsnpmeasure import vcpu_types
+from .vmm_types import VMMType
 
 
 # VMCB Segment (struct vmcb_seg in the linux kernel)
@@ -140,18 +142,34 @@ class VMSA(object):
     BSP_EIP = 0xfffffff0
 
     @staticmethod
-    def build_save_area(eip: int, sev_features: int, vcpu_sig: int):
+    def build_save_area(eip: int, sev_features: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
+        # QEMU and EC2 differ slightly on initial register state
+        if vmm_type == VMMType.QEMU:
+            cs_flags = 0x9b
+            ss_flags = 0x93
+            tr_flags = 0x8b
+            rdx = vcpu_sig
+        elif vmm_type == VMMType.ec2:
+            cs_flags = 0x9b
+            if eip == 0xfffffff0:
+                cs_flags = 0x9a
+            ss_flags = 0x92
+            tr_flags = 0x83
+            rdx = 0
+        else:
+            raise ValueError("unknown VMM type")
+
         return SevEsSaveArea(
             es=VmcbSeg(0, 0x93, 0xffff, 0),
-            cs=VmcbSeg(0xf000, 0x9b, 0xffff, eip & 0xffff0000),
-            ss=VmcbSeg(0, 0x93, 0xffff, 0),
+            cs=VmcbSeg(0xf000, cs_flags, 0xffff, eip & 0xffff0000),
+            ss=VmcbSeg(0, ss_flags, 0xffff, 0),
             ds=VmcbSeg(0, 0x93, 0xffff, 0),
             fs=VmcbSeg(0, 0x93, 0xffff, 0),
             gs=VmcbSeg(0, 0x93, 0xffff, 0),
             gdtr=VmcbSeg(0, 0, 0xffff, 0),
             idtr=VmcbSeg(0, 0, 0xffff, 0),
             ldtr=VmcbSeg(0, 0x82, 0xffff, 0),
-            tr=VmcbSeg(0, 0x8b, 0xffff, 0),
+            tr=VmcbSeg(0, tr_flags, 0xffff, 0),
             efer=0x1000,  # KVM enables EFER_SVME
             cr4=0x40,     # KVM enables X86_CR4_MCE
             cr0=0x10,
@@ -160,20 +178,20 @@ class VMSA(object):
             rflags=0x2,
             rip=eip & 0xffff,
             g_pat=0x7040600070406,  # PAT MSR: See AMD APM Vol 2, Section A.3
-            rdx=vcpu_sig,
+            rdx=rdx,
             sev_features=sev_features,
             xcr0=0x1,
         )
 
-    def __init__(self, sev_mode: SevMode, ap_eip: int, vcpu_sig: int):
+    def __init__(self, sev_mode: SevMode, ap_eip: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
         if sev_mode == SevMode.SEV_SNP:
             sev_features = 0x1
         else:
             sev_features = 0x0
 
-        self.bsp_save_area = VMSA.build_save_area(self.BSP_EIP, sev_features, vcpu_sig)
+        self.bsp_save_area = VMSA.build_save_area(self.BSP_EIP, sev_features, vcpu_sig, vmm_type)
         if ap_eip:
-            self.ap_save_area = VMSA.build_save_area(ap_eip, sev_features, vcpu_sig)
+            self.ap_save_area = VMSA.build_save_area(ap_eip, sev_features, vcpu_sig, vmm_type)
 
     def pages(self, vcpus: int) -> Iterator[bytes]:
         """

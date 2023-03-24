@@ -9,6 +9,7 @@ import sys
 
 from sevsnpmeasure import guest
 from sevsnpmeasure import vcpu_types
+from sevsnpmeasure import vmm_types
 from .sev_mode import SevMode
 
 VERSION = '0.0.5'
@@ -32,6 +33,8 @@ def main() -> int:
     parser.add_argument('--vcpu-family', metavar='FAMILY', type=int, help='Guest vcpu family', default=None)
     parser.add_argument('--vcpu-model', metavar='MODEL', type=int, help='Guest vcpu model', default=None)
     parser.add_argument('--vcpu-stepping', metavar='STEPPING', type=int, help='Guest vcpu stepping', default=None)
+    parser.add_argument('--vmm-type', metavar='VMMTYPE', type=str,
+                        help=f"Type of guest vmm ({', '.join(vmm_types.VMMType._member_names_)})", default='QEMU')
     parser.add_argument('--ovmf', metavar='PATH',
                         help='OVMF file to calculate hash from', required=True)
     parser.add_argument('--kernel', metavar='PATH',
@@ -51,6 +54,11 @@ def main() -> int:
     if args.mode != 'sev' and args.vcpus is None:
         parser.error(f"missing --vcpus N in guest mode '{args.mode}'")
 
+    if args.vmm_type in vmm_types.VMMType._member_names_:
+        vmm_type = vmm_types.VMMType[args.vmm_type]
+    else:
+        parser.error(f"unknown VMM type '{args.vmm_type}'")
+
     vcpu_sig = 0
     if args.mode != 'sev':
         if args.vcpu_family:
@@ -59,12 +67,13 @@ def main() -> int:
             vcpu_sig = args.vcpu_sig
         elif args.vcpu_type:
             vcpu_sig = vcpu_types.CPU_SIGS[args.vcpu_type]
-        else:
+        elif vmm_type == vmm_types.VMMType.QEMU:
             parser.error(f"missing --vcpu-type or --vcpu-sig or --vcpu-family in guest mode '{args.mode}'")
 
     sev_mode = SevMode.from_str(args.mode)
     ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf,
-                                  args.kernel, args.initrd, args.append, args.snp_ovmf_hash)
+                                  args.kernel, args.initrd, args.append, args.snp_ovmf_hash,
+                                  vmm_type = vmm_type)
 
     if args.output_format == "hex":
         measurement = ld.hex()
