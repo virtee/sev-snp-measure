@@ -39,8 +39,8 @@ class GCTX(object):
     # 51 are cleared.
     VMSA_GPA = 0xFFFFFFFFF000
 
-    def __init__(self):
-        self._ld = ZEROS
+    def __init__(self, seed: bytes = ZEROS):
+        self._ld = seed
 
     def ld(self) -> bytes:
         return self._ld
