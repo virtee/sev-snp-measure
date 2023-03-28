@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Add `--mode=snp:ovmf-hash` and `--snp-ovmf-hash` to allow precalculating the
+  first part of SNP launch digest and avoid carrying the full OVMF binary for
+  every minor OVMF change (by [@agraf](https://github.com/agraf)).
+
 ## 0.0.3 - 2022-05-17
 
 ### Added
