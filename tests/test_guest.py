@@ -22,7 +22,7 @@ class TestGuest(unittest.TestCase):
                 "/dev/null",
                 "/dev/null",
                 "",
-                snp_ovmf_hash_str = ovmf_hash)
+                snp_ovmf_hash_str=ovmf_hash)
         self.assertEqual(
                 ld.hex(),
                 '6a23d4774a60f6238506b531e0cb60a698a198db100476f6'
@@ -44,7 +44,7 @@ class TestGuest(unittest.TestCase):
                 "/dev/null",
                 "/dev/null",
                 "",
-                snp_ovmf_hash_str = ovmf_hash)
+                snp_ovmf_hash_str=ovmf_hash)
 
         self.assertEqual(
                 ld.hex(),

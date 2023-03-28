@@ -49,7 +49,8 @@ def calc_snp_ovmf_hash(ovmf_file: str) -> bytes:
     return gctx.ld()
 
 
-def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: str, initrd: str, append: str, ovmf_hash_str: str) -> bytes:
+def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str,
+                           kernel: str, initrd: str, append: str, ovmf_hash_str: str) -> bytes:
 
     gctx = GCTX()
     ovmf = OVMF(ovmf_file)
@@ -58,7 +59,7 @@ def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: st
     # Ignores the contents of the OVMF file in front of us.
     if ovmf_hash_str:
         ovmf_hash = bytearray.fromhex(ovmf_hash_str)
-        gctx = GCTX(seed = ovmf_hash)
+        gctx = GCTX(seed=ovmf_hash)
     else:
         gctx.update_normal_pages(ovmf.gpa(), ovmf.data())
 

@@ -63,7 +63,8 @@ def main() -> int:
             parser.error(f"missing --vcpu-type or --vcpu-sig or --vcpu-family in guest mode '{args.mode}'")
 
     sev_mode = SevMode.from_str(args.mode)
-    ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf, args.kernel, args.initrd, args.append, args.snp_ovmf_hash)
+    ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf,
+                                  args.kernel, args.initrd, args.append, args.snp_ovmf_hash)
 
     if args.output_format == "hex":
         measurement = ld.hex()
