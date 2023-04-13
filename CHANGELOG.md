@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.5 - 2023-04-13
+
 ### Modified
 - Modify SNP measured direct boot to match the order of measured pages in QEMU
   for the [March 2023 patches (v3)](https://lore.kernel.org/qemu-devel/20230302092347.1988853-1-dovmurik@linux.ibm.com/)
