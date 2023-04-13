@@ -75,10 +75,11 @@ Calculate AMD SEV-SNP guest id block
 
 optional arguments:
   -h, --help           show this help message and exit
-  --measurement VALUE  Guest launch measurement
+  --measurement VALUE  Guest launch measurement in Base64 encoding
   --idkey PATH         id private key file
   --authorkey PATH     author private key file
 ```
+
 ## Programmatic usage
 
 After installing the `sev-snp-measure` package with pip, you can call it from
