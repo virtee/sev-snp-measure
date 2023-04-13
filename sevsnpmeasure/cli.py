@@ -11,7 +11,7 @@ from sevsnpmeasure import guest
 from sevsnpmeasure import vcpu_types
 from .sev_mode import SevMode
 
-VERSION = '0.0.3'
+VERSION = '0.0.4'
 
 
 def auto_base_int(s: str) -> int:
