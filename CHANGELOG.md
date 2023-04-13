@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Modified
+- Modify SNP measured direct boot to match the order of measured pages in QEMU
+  for the [March 2023 patches (v3)](https://lore.kernel.org/qemu-devel/20230302092347.1988853-1-dovmurik@linux.ibm.com/)
+  for SNP measured boot.  Note that this is a **BREAKING CHANGE** if you use
+  `--kernel` (that is, the calculated measurement will be different when compared
+  to v0.0.4).
+
 ## 0.0.4 - 2023-04-13
 
 ### Added

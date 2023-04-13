@@ -15,6 +15,7 @@ class SectionType(Enum):
     SNP_SEC_MEM = 1
     SNP_SECRETS = 2
     CPUID = 3
+    SNP_KERNEL_HASHES = 0x10
 
 
 class OvmfSevMetadataSectionDesc(ctypes.LittleEndianStructure):

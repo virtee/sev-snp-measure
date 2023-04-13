@@ -25,8 +25,8 @@ class TestGuest(unittest.TestCase):
                 snp_ovmf_hash_str=ovmf_hash)
         self.assertEqual(
                 ld.hex(),
-                '6a23d4774a60f6238506b531e0cb60a698a198db100476f6'
-                'fadb724f60c144bed9c71a3903b9ca425ff82b376c381b33')
+                '228c6b5fe659c179041ed98ccc13e1199a2d85575ef28b7b'
+                '851e4a0b3a178f5401620cc67b1aa22bca198566defb63e1')
 
     # Test of we can a full LD from the OVMF hash
     def test_snp_ovmf_hash_full(self):
@@ -48,8 +48,8 @@ class TestGuest(unittest.TestCase):
 
         self.assertEqual(
                 ld.hex(),
-                '38859e76ac5fa5009c8249eb2f44dafb33a2a1f41efd65ce'
-                'b13f042864abab87d018dc64da21628b320a98642f25ae6c')
+                'd68382026a91989d9428675e9b220548b76db03c75234403'
+                '16b90f0a72c33b5fee2ade72791fb1c0ff0a923741e5190d')
 
     def test_snp(self):
         ld = guest.calc_launch_digest(
@@ -62,8 +62,8 @@ class TestGuest(unittest.TestCase):
                 "")
         self.assertEqual(
                 ld.hex(),
-                '38859e76ac5fa5009c8249eb2f44dafb33a2a1f41efd65ce'
-                'b13f042864abab87d018dc64da21628b320a98642f25ae6c')
+                'd68382026a91989d9428675e9b220548b76db03c75234403'
+                '16b90f0a72c33b5fee2ade72791fb1c0ff0a923741e5190d')
 
     def test_seves(self):
         ld = guest.calc_launch_digest(
