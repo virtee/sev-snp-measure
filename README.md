@@ -140,6 +140,7 @@ On a different machine that only has access to an older but compatible OVMF bina
 * [sev Rust crate](https://github.com/virtee/sev)
 * [snp-digest-rs](https://github.com/slp/snp-digest-rs)
 * [AMD SEV-Tool](https://github.com/AMDESE/sev-tool)
+* [go-sev-guest](https://github.com/google/go-sev-guest)
 
 ## Notes
 
