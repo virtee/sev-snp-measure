@@ -6,6 +6,7 @@
 import unittest
 from sevsnpmeasure import guest
 from sevsnpmeasure import vcpu_types
+from sevsnpmeasure import vmm_types
 from sevsnpmeasure.sev_mode import SevMode
 
 
@@ -50,6 +51,21 @@ class TestGuest(unittest.TestCase):
                 ld.hex(),
                 'd68382026a91989d9428675e9b220548b76db03c75234403'
                 '16b90f0a72c33b5fee2ade72791fb1c0ff0a923741e5190d')
+
+    def test_snp_ec2(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP,
+                1,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
+                "tests/fixtures/ovmf_suffix.bin",
+                "/dev/null",
+                "/dev/null",
+                "",
+                vmm_type = vmm_types.VMMType.ec2)
+        self.assertEqual(
+                ld.hex(),
+                '21408991204a77c12eb014cc7a1ad723b423069f421b873d'
+                '1fa283472712182752a5ad6656f5e22aea239b6adde1db26')
 
     def test_snp(self):
         ld = guest.calc_launch_digest(

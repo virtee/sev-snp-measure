@@ -31,9 +31,9 @@ Clone the Github repo and run the script directly from the local directory:
 $ sev-snp-measure --help
 usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp,snp:ovmf-hash} [--vcpus N]
                        [--vcpu-type CPUTYPE] [--vcpu-sig VALUE] [--vcpu-family FAMILY]
-                       [--vcpu-model MODEL] [--vcpu-stepping STEPPING] --ovmf PATH [--kernel PATH]
-                       [--initrd PATH] [--append CMDLINE] [--output-format {hex,base64}]
-                       [--snp-ovmf-hash HASH]
+                       [--vcpu-model MODEL] [--vcpu-stepping STEPPING] [--vmm-type VMMTYPE] --ovmf
+                       PATH [--kernel PATH] [--initrd PATH] [--append CMDLINE]
+                       [--output-format {hex,base64}] [--snp-ovmf-hash HASH]
 
 Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement
 
@@ -52,6 +52,7 @@ optional arguments:
   --vcpu-model MODEL    Guest vcpu model
   --vcpu-stepping STEPPING
                         Guest vcpu stepping
+  --vmm-type VMMTYPE    Type of guest vmm (QEMU, ec2)
   --ovmf PATH           OVMF file to calculate hash from
   --kernel PATH         Kernel file to calculate hash from
   --initrd PATH         Initrd file to calculate hash from (use with --kernel)
@@ -101,9 +102,9 @@ print("Calculated id block in base64", block)
 ## Choosing guest CPU type
 
 For SEV-ES and SEV-SNP, the initial CPU state (VMSA) includes the guest CPU
-signature in the edx register.  Therefore, starting the VM with a different
-type of guest CPU will modify the content of the VMSA, and therefore modify the
-calculated measurement.
+signature in the edx register when you use the QEMU vmm.  Therefore, starting
+the VM with a different type of guest CPU will modify the content of the VMSA,
+and therefore modify the calculated measurement.
 
 You can choose the guest CPU type using `--vcpu-type`, or `--vcpu-sig`, or a
 combination of `--vcpu-family`, `--vcpu-model`, and `--vcpu-stepping`. For
