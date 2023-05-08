@@ -23,7 +23,7 @@ def main() -> int:
                                      description='Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement')
     parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}')
     parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('--mode', choices=['sev', 'seves', 'snp'], help='Guest mode', required=True)
+    parser.add_argument('--mode', choices=['sev', 'seves', 'snp', 'csv'], help='Guest mode', required=True)
     parser.add_argument('--vcpus', metavar='N', type=int, help='Number of guest vcpus', default=None)
     parser.add_argument('--vcpu-type', metavar='CPUTYPE', choices=list(vcpu_types.CPU_SIGS.keys()),
                         help=f"Type of guest vcpu ({', '.join(vcpu_types.CPU_SIGS.keys())})",
@@ -43,11 +43,11 @@ def main() -> int:
     parser.add_argument('--output-format', choices=['hex', 'base64'], help='Measurement output format', default='hex')
     args = parser.parse_args()
 
-    if args.mode != 'sev' and args.vcpus is None:
+    if args.mode != 'sev' or args.mode != 'csv' and args.vcpus is None:
         parser.error(f"missing --vcpus N in guest mode '{args.mode}'")
 
     vcpu_sig = 0
-    if args.mode != 'sev':
+    if args.mode != 'sev' or args.mode != 'csv':
         if args.vcpu_family:
             vcpu_sig = vcpu_types.cpu_sig(args.vcpu_family, args.vcpu_model, args.vcpu_stepping)
         elif args.vcpu_sig:
