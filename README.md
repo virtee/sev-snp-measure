@@ -40,7 +40,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   -v, --verbose
-  --mode {sev,seves,snp}
+  --mode {sev,seves,snp,csv}
                         Guest mode
   --vcpus N             Number of guest vcpus
   --vcpu-type CPUTYPE   Type of guest vcpu (EPYC, EPYC-v1, EPYC-v2, EPYC-IBPB, EPYC-v3, EPYC-v4,

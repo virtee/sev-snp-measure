@@ -43,11 +43,11 @@ def main() -> int:
     parser.add_argument('--output-format', choices=['hex', 'base64'], help='Measurement output format', default='hex')
     args = parser.parse_args()
 
-    if args.mode != 'sev' and args.vcpus is None:
+    if args.mode != 'sev' or args.mode != 'csv' and args.vcpus is None:
         parser.error(f"missing --vcpus N in guest mode '{args.mode}'")
 
     vcpu_sig = 0
-    if args.mode != 'sev':
+    if args.mode != 'sev' or args.mode != 'csv':
         if args.vcpu_family:
             vcpu_sig = vcpu_types.cpu_sig(args.vcpu_family, args.vcpu_model, args.vcpu_stepping)
         elif args.vcpu_sig:
