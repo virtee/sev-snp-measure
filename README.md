@@ -13,6 +13,12 @@ Install from pip:
 
     pip install sev-snp-measure
 
+
+Install dependency:
+
+    pip install snowland-smx
+
+    
 This installs the `sevsnpmeasure` package and the `sev-snp-measure`
 command-line script.
 
