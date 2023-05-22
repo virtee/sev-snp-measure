@@ -61,7 +61,7 @@ class TestGuest(unittest.TestCase):
                 "/dev/null",
                 "/dev/null",
                 "",
-                vmm_type = vmm_types.VMMType.ec2)
+                vmm_type=vmm_types.VMMType.ec2)
         self.assertEqual(
                 ld.hex(),
                 '21408991204a77c12eb014cc7a1ad723b423069f421b873d'

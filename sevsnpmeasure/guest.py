@@ -25,7 +25,7 @@ def calc_launch_digest(mode: SevMode, vcpus: int, vcpu_sig: int, ovmf_file: str,
     if mode == SevMode.SEV_SNP:
         return snp_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, snp_ovmf_hash_str, vmm_type)
     elif mode == SevMode.SEV_ES:
-        return seves_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, vmm_type = vmm_type)
+        return seves_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, vmm_type=vmm_type)
     elif mode == SevMode.SEV:
         return sev_calc_launch_digest(ovmf_file, kernel, initrd, append)
     else:
@@ -43,7 +43,7 @@ def snp_update_kernel_hashes(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHas
         gctx.update_zero_pages(gpa, size)
 
 
-def snp_update_metadata_pages(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHashes], vmm_type: VMMType = VMMType.QEMU) -> None:
+def snp_update_metadata_pages(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHashes], vmm_type: VMMType) -> None:
     for desc in ovmf.metadata_items():
         if desc.section_type() == SectionType.SNP_SEC_MEM:
             gctx.update_zero_pages(desc.gpa, desc.size)

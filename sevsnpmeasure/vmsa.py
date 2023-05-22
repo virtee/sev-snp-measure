@@ -7,7 +7,6 @@ import ctypes
 from ctypes import c_uint8, c_uint16, c_uint32, c_uint64
 from typing import Iterator
 from .sev_mode import SevMode
-from sevsnpmeasure import vcpu_types
 from .vmm_types import VMMType
 
 
