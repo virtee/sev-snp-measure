@@ -39,4 +39,6 @@ CPU_SIGS = {
     'EPYC-Milan': cpu_sig(family=25, model=1, stepping=1),
     'EPYC-Milan-v1': cpu_sig(family=25, model=1, stepping=1),
     'EPYC-Milan-v2': cpu_sig(family=25, model=1, stepping=1),
+    'EPYC-Genoa': cpu_sig(family=25, model=17, stepping=0),
+    'EPYC-Genoa-v1': cpu_sig(family=25, model=17, stepping=0),
 }
