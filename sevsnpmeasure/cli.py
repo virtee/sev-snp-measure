@@ -19,6 +19,18 @@ def auto_base_int(s: str) -> int:
     return int(s, 0)
 
 
+def print_measurement(ld: bytes, sev_mode: SevMode, output_format: str, verbose: bool):
+    if output_format == "hex":
+        measurement = ld.hex()
+    elif output_format == "base64":
+        measurement = base64.b64encode(ld).decode()
+
+    if verbose:
+        print(f"Calculated {sev_mode.name} guest measurement: {measurement}")
+    else:
+        print(measurement)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog='sev-snp-measure',
                                      description='Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement')
@@ -34,7 +46,7 @@ def main() -> int:
     parser.add_argument('--vcpu-model', metavar='MODEL', type=int, help='Guest vcpu model', default=None)
     parser.add_argument('--vcpu-stepping', metavar='STEPPING', type=int, help='Guest vcpu stepping', default=None)
     parser.add_argument('--vmm-type', metavar='VMMTYPE', type=str,
-                        help=f"Type of guest vmm ({', '.join(vmm_types.VMMType._member_names_)})", default='QEMU')
+                        help=f"Type of guest vmm ({', '.join(vmm_types.VMMType.__members__.keys())})", default='QEMU')
     parser.add_argument('--ovmf', metavar='PATH',
                         help='OVMF file to calculate hash from', required=True)
     parser.add_argument('--kernel', metavar='PATH',
@@ -54,7 +66,7 @@ def main() -> int:
     if args.mode != 'sev' and args.vcpus is None:
         parser.error(f"missing --vcpus N in guest mode '{args.mode}'")
 
-    if args.vmm_type in vmm_types.VMMType._member_names_:
+    if args.vmm_type in vmm_types.VMMType.__members__.keys():
         vmm_type = vmm_types.VMMType[args.vmm_type]
     else:
         parser.error(f"unknown VMM type '{args.vmm_type}'")
@@ -73,17 +85,9 @@ def main() -> int:
     sev_mode = SevMode.from_str(args.mode)
     ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf,
                                   args.kernel, args.initrd, args.append, args.snp_ovmf_hash,
-                                  vmm_type = vmm_type)
+                                  vmm_type=vmm_type)
 
-    if args.output_format == "hex":
-        measurement = ld.hex()
-    elif args.output_format == "base64":
-        measurement = base64.b64encode(ld).decode()
-
-    if args.verbose:
-        print(f"Calculated {sev_mode.name} guest measurement: {measurement}")
-    else:
-        print(measurement)
+    print_measurement(ld, sev_mode, args.output_format, args.verbose)
     return 0
 
 
