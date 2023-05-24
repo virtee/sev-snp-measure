@@ -19,6 +19,8 @@ LaunchDigest = c_uint8 * 48
 ECParam = c_uint8 * 52
 ECSignature = c_uint8 * 512
 ECPubKey = c_uint8 * 1028
+Qx = c_uint8 * 72
+Qy = c_uint8 * 72
 
 DefaultIDs = bytes(0x20)
 DefaultVersion = 1
@@ -28,7 +30,6 @@ DefaultKeyAlgo = 1
 CurveP384 = 2
 ECKeyLength = 1028
 ECSigLength = 512
-
 
 
 def main() -> int:
@@ -76,8 +77,8 @@ class IdAuth(ctypes.Structure) :
 class ECPublicKey(ctypes.Structure) :
     _fields_ = [
         ("curve", ctypes.c_uint32),
-        ("qx", ctypes.c_char * 72),
-        ("qy", ctypes.c_char * 72),
+        ("qx", Qx),
+        ("qy", Qy),
         ("reserved", ctypes.c_char * 0x370)
     ]
 def snp_calc_id_block(ld: bytes, idkey_file: str, authorkey_file: str) -> str:
@@ -140,17 +141,15 @@ def load_private_key_from_pem_file(pem_file_path: str) -> ec.EllipticCurvePrivat
     raise ValueError("The provided PEM file does not contain an EC private key.")
 
 def marshal_ec_public_key(priv_key: ec.EllipticCurvePrivateKey) -> bytes:
-    curve = b'\x02\x00\x00\x00'  # P-384
     pub_key = priv_key.public_key()
     x = pub_key.public_numbers().x
     y = pub_key.public_numbers().y
     qx = x.to_bytes(0x48, byteorder="little")
     qy = y.to_bytes(0x48, byteorder="little")
-    # result = curve + qx + qy + bytes(0x370)
     result = ECPublicKey(
         curve = CurveP384,
-        qx = qx,
-        qy = qy
+        qx = Qx.from_buffer_copy(qx),
+        qy = Qy.from_buffer_copy(qy),
     )
     return bytes(result)
 
