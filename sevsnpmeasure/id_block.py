@@ -17,6 +17,8 @@ LaunchDigest = c_uint8 * 48
 ECParam = c_uint8 * 52
 ECSignature = c_uint8 * 512
 ECPubKey = c_uint8 * 1028
+Qx = c_uint8 * 72
+Qy = c_uint8 * 72
 
 DefaultIDs = bytes(0x20)
 DefaultVersion = 1
@@ -74,8 +76,8 @@ class IdAuth(ctypes.Structure):
 class ECPublicKey(ctypes.Structure):
     _fields_ = [
         ("curve", ctypes.c_uint32),
-        ("qx", ctypes.c_char * 72),
-        ("qy", ctypes.c_char * 72),
+        ("qx", Qx),
+        ("qy", Qy),
         ("reserved", ctypes.c_char * 0x370)
     ]
 
@@ -157,8 +159,8 @@ def marshal_ec_public_key(priv_key: ec.EllipticCurvePrivateKey) -> bytes:
     qy = y.to_bytes(0x48, byteorder="little")
     result = ECPublicKey(
         curve=CurveP384,
-        qx=qx,
-        qy=qy
+        qx=Qx.from_buffer_copy(qx),
+        qy=Qy.from_buffer_copy(qy),
     )
     return bytes(result)
 
