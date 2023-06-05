@@ -6,6 +6,7 @@
 - Add `--vmm-type=ec2` to calculate SNP measurements according to the EC2 VMM,
   which is slightly different than the way QEMU measures the initial VM state
   (by [@agraf](https://github.com/agraf)).
+- Detect OVMF that doesn't support kernel hashes and exit with error.
 
 ## 0.0.5 - 2023-04-13
 

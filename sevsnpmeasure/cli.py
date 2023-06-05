@@ -86,12 +86,17 @@ def main() -> int:
 
     vcpu_sig = get_vcpu_sig(parser, args, vmm_type)
 
-    sev_mode = SevMode.from_str(args.mode)
-    ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf,
-                                  args.kernel, args.initrd, args.append, args.snp_ovmf_hash,
-                                  vmm_type=vmm_type)
+    try:
+        sev_mode = SevMode.from_str(args.mode)
+        ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf,
+                                      args.kernel, args.initrd, args.append, args.snp_ovmf_hash,
+                                      vmm_type=vmm_type)
 
-    print_measurement(ld, sev_mode, args.output_format, args.verbose)
+        print_measurement(ld, sev_mode, args.output_format, args.verbose)
+    except RuntimeError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
     return 0
 
 

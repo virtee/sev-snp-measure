@@ -67,6 +67,9 @@ def snp_update_metadata_pages(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHa
             if desc.section_type() == SectionType.CPUID:
                 gctx.update_cpuid_page(desc.gpa)
 
+    if sev_hashes is not None and not ovmf.has_metadata_section(SectionType.SNP_KERNEL_HASHES):
+        raise RuntimeError("Kernel specified but OVMF metadata doesn't include SNP_KERNEL_HASHES section")
+
 
 def calc_snp_ovmf_hash(ovmf_file: str) -> bytes:
     ovmf = OVMF(ovmf_file)
@@ -109,6 +112,8 @@ def seves_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: 
     ovmf = OVMF(ovmf_file)
     launch_hash = hashlib.sha256(ovmf.data())
     if kernel:
+        if not ovmf.is_sev_hashes_table_supported():
+            raise RuntimeError("Kernel specified but OVMF doesn't support kernel/initrd/cmdline measurement")
         sev_hashes_table = SevHashes(kernel, initrd, append).construct_table()
         launch_hash.update(sev_hashes_table)
     vmsa = VMSA(SevMode.SEV_ES, ovmf.sev_es_reset_eip(), vcpu_sig, vmm_type)
@@ -121,6 +126,8 @@ def sev_calc_launch_digest(ovmf_file: str, kernel: str, initrd: str, append: str
     ovmf = OVMF(ovmf_file)
     launch_hash = hashlib.sha256(ovmf.data())
     if kernel:
+        if not ovmf.is_sev_hashes_table_supported():
+            raise RuntimeError("Kernel specified but OVMF doesn't support kernel/initrd/cmdline measurement")
         sev_hashes_table = SevHashes(kernel, initrd, append).construct_table()
         launch_hash.update(sev_hashes_table)
     return launch_hash.digest()

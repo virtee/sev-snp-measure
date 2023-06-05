@@ -79,6 +79,12 @@ class OVMF(object):
     def metadata_items(self):
         return self._metadata_items
 
+    def has_metadata_section(self, section_type: SectionType) -> bool:
+        return any(True for s in self.metadata_items() if s.section_type() == section_type)
+
+    def is_sev_hashes_table_supported(self) -> bool:
+        return self.SEV_HASH_TABLE_RV_GUID in self._table and self.sev_hashes_table_gpa() != 0
+
     def sev_hashes_table_gpa(self) -> int:
         if self.SEV_HASH_TABLE_RV_GUID not in self._table:
             raise RuntimeError("Can't find SEV_HASH_TABLE_RV_GUID entry in OVMF table")
