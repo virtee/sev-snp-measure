@@ -7,7 +7,7 @@ import hashlib
 from typing import Optional
 
 from .gctx import GCTX
-from .ovmf import OVMF, SectionType
+from .ovmf import OVMF, SectionType, OvmfSevMetadataSectionDesc
 from .sev_hashes import SevHashes
 from .vmsa import VMSA
 from .sev_mode import SevMode
@@ -43,19 +43,24 @@ def snp_update_kernel_hashes(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHas
         gctx.update_zero_pages(gpa, size)
 
 
+def snp_update_section(desc: OvmfSevMetadataSectionDesc, gctx: GCTX, ovmf: OVMF,
+                       sev_hashes: Optional[SevHashes], vmm_type: VMMType) -> None:
+    if desc.section_type() == SectionType.SNP_SEC_MEM:
+        gctx.update_zero_pages(desc.gpa, desc.size)
+    elif desc.section_type() == SectionType.SNP_SECRETS:
+        gctx.update_secrets_page(desc.gpa)
+    elif desc.section_type() == SectionType.CPUID:
+        if not vmm_type == VMMType.ec2:
+            gctx.update_cpuid_page(desc.gpa)
+    elif desc.section_type() == SectionType.SNP_KERNEL_HASHES:
+        snp_update_kernel_hashes(gctx, ovmf, sev_hashes, desc.gpa, desc.size)
+    else:
+        raise ValueError("unknown OVMF metadata section type")
+
+
 def snp_update_metadata_pages(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHashes], vmm_type: VMMType) -> None:
     for desc in ovmf.metadata_items():
-        if desc.section_type() == SectionType.SNP_SEC_MEM:
-            gctx.update_zero_pages(desc.gpa, desc.size)
-        elif desc.section_type() == SectionType.SNP_SECRETS:
-            gctx.update_secrets_page(desc.gpa)
-        elif desc.section_type() == SectionType.CPUID:
-            if not vmm_type == VMMType.ec2:
-                gctx.update_cpuid_page(desc.gpa)
-        elif desc.section_type() == SectionType.SNP_KERNEL_HASHES:
-            snp_update_kernel_hashes(gctx, ovmf, sev_hashes, desc.gpa, desc.size)
-        else:
-            raise ValueError("unknown OVMF metadata section type")
+        snp_update_section(desc, gctx, ovmf, sev_hashes, vmm_type)
 
     if vmm_type == VMMType.ec2:
         for desc in ovmf.metadata_items():
