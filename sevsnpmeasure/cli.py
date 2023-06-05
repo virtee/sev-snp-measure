@@ -31,6 +31,19 @@ def print_measurement(ld: bytes, sev_mode: SevMode, output_format: str, verbose:
         print(measurement)
 
 
+def get_vcpu_sig(parser, args, vmm_type):
+    if args.mode == 'sev':
+        return 0
+    elif args.vcpu_family:
+        return vcpu_types.cpu_sig(args.vcpu_family, args.vcpu_model, args.vcpu_stepping)
+    elif args.vcpu_sig:
+        return args.vcpu_sig
+    elif args.vcpu_type:
+        return vcpu_types.CPU_SIGS[args.vcpu_type]
+    elif vmm_type == vmm_types.VMMType.QEMU:
+        parser.error(f"missing --vcpu-type or --vcpu-sig or --vcpu-family in guest mode '{args.mode}'")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog='sev-snp-measure',
                                      description='Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement')
@@ -71,16 +84,7 @@ def main() -> int:
     else:
         parser.error(f"unknown VMM type '{args.vmm_type}'")
 
-    vcpu_sig = 0
-    if args.mode != 'sev':
-        if args.vcpu_family:
-            vcpu_sig = vcpu_types.cpu_sig(args.vcpu_family, args.vcpu_model, args.vcpu_stepping)
-        elif args.vcpu_sig:
-            vcpu_sig = args.vcpu_sig
-        elif args.vcpu_type:
-            vcpu_sig = vcpu_types.CPU_SIGS[args.vcpu_type]
-        elif vmm_type == vmm_types.VMMType.QEMU:
-            parser.error(f"missing --vcpu-type or --vcpu-sig or --vcpu-family in guest mode '{args.mode}'")
+    vcpu_sig = get_vcpu_sig(parser, args, vmm_type)
 
     sev_mode = SevMode.from_str(args.mode)
     ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf,
