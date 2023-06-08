@@ -81,6 +81,20 @@ class TestGuest(unittest.TestCase):
                 '841f900f4aa101754522ab020442a5bd8652c4237eea7a7e'
                 '2c4d501f654536378bc36be8dc06140de94a882408bc8a7f')
 
+    def test_snp_with_multiple_vcpus(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP,
+                4,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
+                "tests/fixtures/ovmf_suffix.bin",
+                "/dev/null",
+                "/dev/null",
+                "")
+        self.assertEqual(
+                ld.hex(),
+                '1c784beb8c49aa604b7fd57fbc73b36ec53a3f5fb48a2b89'
+                '5ad6cc2ea15d18ee7cc15e3e57c792766b45f944c3e81cfe')
+
     def test_seves(self):
         ld = guest.calc_launch_digest(
                 SevMode.SEV_ES,
@@ -93,6 +107,19 @@ class TestGuest(unittest.TestCase):
         self.assertEqual(
                 ld.hex(),
                 '2e91d54814445ad178180af09f881efe4079fc54bfddd0ec1179ecd3cdbdf772')
+
+    def test_seves_with_multiple_vcpus(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_ES,
+                4,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
+                "tests/fixtures/ovmf_suffix.bin",
+                "/dev/null",
+                "/dev/null",
+                "")
+        self.assertEqual(
+                ld.hex(),
+                'c05d37600072dc5ff24bafc49410f0369ba3a37c130a7bb7055ac6878be300f7')
 
     def test_sev(self):
         ld = guest.calc_launch_digest(
