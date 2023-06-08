@@ -138,9 +138,10 @@ On a different machine that only has access to an older but compatible OVMF bina
 
 * libvirt tools: [virt-dom-sev-validate](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-validate.py),
   [virt-dom-sev-vmsa-tool](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-vmsa-tool.py)
-* [sev Rust crate](https://github.com/virtee/sev)
+* [sev Rust crate](https://github.com/virtee/sev) and [snpguest CLI tool](https://github.com/virtee/snpguest)
 * [snp-digest-rs](https://github.com/slp/snp-digest-rs)
-* [AMD SEV-Tool](https://github.com/AMDESE/sev-tool)
+* AMD [sev-tool](https://github.com/AMDESE/sev-tool), [sev-guest](https://github.com/AMDESE/sev-guest),
+  and [sev-utils](https://github.com/amd/sev-utils)
 * [go-sev-guest](https://github.com/google/go-sev-guest)
 
 ## Notes
