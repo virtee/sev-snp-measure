@@ -9,6 +9,11 @@ lint:
 typecheck:
 	mypy .
 
+coverage:
+	python3 -m coverage run -m unittest discover tests/
+	python3 -m coverage report
+	python3 -m coverage html
+
 build_packages:
 	rm -rf dist
 	python3 -m build
