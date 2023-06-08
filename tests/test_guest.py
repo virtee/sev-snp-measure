@@ -19,7 +19,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV_SNP,
                 1,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "",
@@ -31,7 +31,7 @@ class TestGuest(unittest.TestCase):
 
     # Test of we can a full LD from the OVMF hash
     def test_snp_ovmf_hash_full(self):
-        ovmf_hash = guest.calc_snp_ovmf_hash("tests/fixtures/ovmf_suffix.bin").hex()
+        ovmf_hash = guest.calc_snp_ovmf_hash("tests/fixtures/ovmf_AmdSev_suffix.bin").hex()
         self.assertEqual(
                 ovmf_hash,
                 'edcf6d1c57ce868a167c990f58c8667c698269ef9e080324'
@@ -41,7 +41,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV_SNP,
                 1,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "",
@@ -57,7 +57,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV_SNP,
                 1,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "",
@@ -72,7 +72,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV_SNP,
                 1,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
@@ -81,12 +81,26 @@ class TestGuest(unittest.TestCase):
                 '841f900f4aa101754522ab020442a5bd8652c4237eea7a7e'
                 '2c4d501f654536378bc36be8dc06140de94a882408bc8a7f')
 
+    def test_snp_without_kernel(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP,
+                1,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
+                None,
+                None,
+                None)
+        self.assertEqual(
+                ld.hex(),
+                'e5e6be5a8fa6256f0245666bb237e2d028b7928148ce78d5'
+                '1b8a64dc9506c377709a5b5d7ab75554593bced304fcff93')
+
     def test_snp_with_multiple_vcpus(self):
         ld = guest.calc_launch_digest(
                 SevMode.SEV_SNP,
                 4,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
@@ -95,12 +109,39 @@ class TestGuest(unittest.TestCase):
                 '1c784beb8c49aa604b7fd57fbc73b36ec53a3f5fb48a2b89'
                 '5ad6cc2ea15d18ee7cc15e3e57c792766b45f944c3e81cfe')
 
+    def test_snp_with_ovmfx64_without_kernel(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP,
+                1,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
+                "tests/fixtures/ovmf_OvmfX64_suffix.bin",
+                None,
+                None,
+                None)
+        self.assertEqual(
+                ld.hex(),
+                '7ef631fa7f659f7250de96c456a0eb7354bd3b9461982f38'
+                '6a41c6a6aede87870ad020552a5a0716672d5d6e5b86b8f9')
+
+    def test_snp_with_ovmfx64_and_kernel_should_fail(self):
+        with self.assertRaises(RuntimeError) as c:
+            guest.calc_launch_digest(
+                    SevMode.SEV_SNP,
+                    1,
+                    vcpu_types.CPU_SIGS["EPYC-v4"],
+                    "tests/fixtures/ovmf_OvmfX64_suffix.bin",
+                    "/dev/null",
+                    "/dev/null",
+                    "")
+        self.assertEqual(str(c.exception),
+                         "Kernel specified but OVMF metadata doesn't include SNP_KERNEL_HASHES section")
+
     def test_seves(self):
         ld = guest.calc_launch_digest(
                 SevMode.SEV_ES,
                 1,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
@@ -113,7 +154,7 @@ class TestGuest(unittest.TestCase):
                 SevMode.SEV_ES,
                 4,
                 vcpu_types.CPU_SIGS["EPYC-v4"],
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
@@ -121,15 +162,54 @@ class TestGuest(unittest.TestCase):
                 ld.hex(),
                 'c05d37600072dc5ff24bafc49410f0369ba3a37c130a7bb7055ac6878be300f7')
 
+    def test_seves_with_ovmfx64_and_kernel_should_fail(self):
+        with self.assertRaises(RuntimeError) as c:
+            guest.calc_launch_digest(
+                    SevMode.SEV_ES,
+                    1,
+                    None,
+                    "tests/fixtures/ovmf_OvmfX64_suffix.bin",
+                    "/dev/null",
+                    "/dev/null",
+                    "")
+        self.assertEqual(str(c.exception),
+                         "Kernel specified but OVMF doesn't support kernel/initrd/cmdline measurement")
+
     def test_sev(self):
         ld = guest.calc_launch_digest(
                 SevMode.SEV,
                 1,
                 None,
-                "tests/fixtures/ovmf_suffix.bin",
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
                 "")
         self.assertEqual(
                 ld.hex(),
                 '7332f6ef294f79919b46302e4541900a2dfc96714e2b7b4b5ccdc1899b78a195')
+
+    def test_sev_with_ovmfx64_and_kernel_should_fail(self):
+        with self.assertRaises(RuntimeError) as c:
+            guest.calc_launch_digest(
+                    SevMode.SEV,
+                    1,
+                    None,
+                    "tests/fixtures/ovmf_OvmfX64_suffix.bin",
+                    "/dev/null",
+                    "/dev/null",
+                    "")
+        self.assertEqual(str(c.exception),
+                         "Kernel specified but OVMF doesn't support kernel/initrd/cmdline measurement")
+
+    def test_sev_with_ovmfx64_without_kernel(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV,
+                1,
+                None,
+                "tests/fixtures/ovmf_OvmfX64_suffix.bin",
+                None,
+                None,
+                None)
+        self.assertEqual(
+                ld.hex(),
+                'af9d6c674b1ff04937084c98c99ca106b25c37b2c9541ac313e6e0c54426314f')
