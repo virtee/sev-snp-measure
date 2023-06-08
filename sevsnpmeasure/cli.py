@@ -76,6 +76,12 @@ def main() -> int:
         print(guest.calc_snp_ovmf_hash(args.ovmf).hex())
         return 0
 
+    if args.initrd and args.kernel is None:
+        parser.error("--kernel required when using --initrd")
+
+    if args.append and args.kernel is None:
+        parser.error("--kernel required when using --append")
+
     if args.mode != 'sev' and args.vcpus is None:
         parser.error(f"missing --vcpus N in guest mode '{args.mode}'")
 
