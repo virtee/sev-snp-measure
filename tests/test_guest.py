@@ -26,16 +26,16 @@ class TestGuest(unittest.TestCase):
                 snp_ovmf_hash_str=ovmf_hash)
         self.assertEqual(
                 ld.hex(),
-                '228c6b5fe659c179041ed98ccc13e1199a2d85575ef28b7b'
-                '851e4a0b3a178f5401620cc67b1aa22bca198566defb63e1')
+                'db06fb267824b1ccb56edbe2a9c2ce88841bca5090dc6dac'
+                '91d9cd30f3c2c0bf42daccb30d55d6625bfbf0dae5c50c6d')
 
     # Test of we can a full LD from the OVMF hash
     def test_snp_ovmf_hash_full(self):
         ovmf_hash = guest.calc_snp_ovmf_hash("tests/fixtures/ovmf_suffix.bin").hex()
         self.assertEqual(
                 ovmf_hash,
-                '4ef91bfd7241908300ac19305a694753cbc8db28104f356f'
-                'd7860cc7b4119db285ce80586c19bd358a731d5267cee60e')
+                'edcf6d1c57ce868a167c990f58c8667c698269ef9e080324'
+                '6419eea914186343054d557e1f17acd93b032c106bc70d25')
 
         ld = guest.calc_launch_digest(
                 SevMode.SEV_SNP,
@@ -49,8 +49,8 @@ class TestGuest(unittest.TestCase):
 
         self.assertEqual(
                 ld.hex(),
-                'd68382026a91989d9428675e9b220548b76db03c75234403'
-                '16b90f0a72c33b5fee2ade72791fb1c0ff0a923741e5190d')
+                '841f900f4aa101754522ab020442a5bd8652c4237eea7a7e'
+                '2c4d501f654536378bc36be8dc06140de94a882408bc8a7f')
 
     def test_snp_ec2(self):
         ld = guest.calc_launch_digest(
@@ -64,8 +64,8 @@ class TestGuest(unittest.TestCase):
                 vmm_type=vmm_types.VMMType.ec2)
         self.assertEqual(
                 ld.hex(),
-                '21408991204a77c12eb014cc7a1ad723b423069f421b873d'
-                '1fa283472712182752a5ad6656f5e22aea239b6adde1db26')
+                '760b6e51039d2d6c1fc6d38ca5c387967d158e0294883e45'
+                '22c36f89bd61bfc9cdb975cd1ceedffbe1b23b1daf4e3f42')
 
     def test_snp(self):
         ld = guest.calc_launch_digest(
@@ -78,8 +78,8 @@ class TestGuest(unittest.TestCase):
                 "")
         self.assertEqual(
                 ld.hex(),
-                'd68382026a91989d9428675e9b220548b76db03c75234403'
-                '16b90f0a72c33b5fee2ade72791fb1c0ff0a923741e5190d')
+                '841f900f4aa101754522ab020442a5bd8652c4237eea7a7e'
+                '2c4d501f654536378bc36be8dc06140de94a882408bc8a7f')
 
     def test_seves(self):
         ld = guest.calc_launch_digest(
@@ -92,7 +92,7 @@ class TestGuest(unittest.TestCase):
                 "")
         self.assertEqual(
                 ld.hex(),
-                '7e5c26fb454621eb466978b4d0242b3c04b44a034de7fc0a2d8dac60ea2b6403')
+                '2e91d54814445ad178180af09f881efe4079fc54bfddd0ec1179ecd3cdbdf772')
 
     def test_sev(self):
         ld = guest.calc_launch_digest(
@@ -105,4 +105,4 @@ class TestGuest(unittest.TestCase):
                 "")
         self.assertEqual(
                 ld.hex(),
-                'd59d7696efd7facfaa653758586e6120c4b6eaec3e327771d278cc6a44786ba5')
+                '7332f6ef294f79919b46302e4541900a2dfc96714e2b7b4b5ccdc1899b78a195')
