@@ -44,13 +44,12 @@ class TestGuest(unittest.TestCase):
                 "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
-                "",
+                "console=ttyS0 loglevel=7",
                 snp_ovmf_hash_str=ovmf_hash)
-
         self.assertEqual(
                 ld.hex(),
-                '841f900f4aa101754522ab020442a5bd8652c4237eea7a7e'
-                '2c4d501f654536378bc36be8dc06140de94a882408bc8a7f')
+                'f07864303ad8243132029e8110b92805c78d1135a15da75f'
+                '67abb9a711d78740347f24ee76f603e650ec4adf3611cc1e')
 
     def test_snp_ec2(self):
         ld = guest.calc_launch_digest(
@@ -75,11 +74,11 @@ class TestGuest(unittest.TestCase):
                 "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
-                "")
+                "console=ttyS0 loglevel=7")
         self.assertEqual(
                 ld.hex(),
-                '841f900f4aa101754522ab020442a5bd8652c4237eea7a7e'
-                '2c4d501f654536378bc36be8dc06140de94a882408bc8a7f')
+                'f07864303ad8243132029e8110b92805c78d1135a15da75f'
+                '67abb9a711d78740347f24ee76f603e650ec4adf3611cc1e')
 
     def test_snp_without_kernel(self):
         ld = guest.calc_launch_digest(
@@ -183,7 +182,20 @@ class TestGuest(unittest.TestCase):
                 "tests/fixtures/ovmf_AmdSev_suffix.bin",
                 "/dev/null",
                 "/dev/null",
-                "")
+                "console=ttyS0 loglevel=7")
+        self.assertEqual(
+                ld.hex(),
+                'f0d92a1fda00249e008820bd40def6abbed2ee65fea8a8bc47e532863ca0cc6a')
+
+    def test_sev_with_kernel_without_initrd_and_append(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV,
+                1,
+                None,
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
+                "/dev/null",
+                None,
+                None)
         self.assertEqual(
                 ld.hex(),
                 '7332f6ef294f79919b46302e4541900a2dfc96714e2b7b4b5ccdc1899b78a195')
