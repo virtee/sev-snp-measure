@@ -7,6 +7,7 @@
   which is slightly different than the way QEMU measures the initial VM state
   (by [@agraf](https://github.com/agraf)).
 - Detect OVMF that doesn't support kernel hashes and exit with error.
+- Exit with error if `--initrd`/`--append` are used without `--kernel`.
 
 ## 0.0.5 - 2023-04-13
 
