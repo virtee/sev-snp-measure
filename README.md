@@ -144,6 +144,29 @@ On a different machine that only has access to an older but compatible OVMF bina
   and [sev-utils](https://github.com/amd/sev-utils)
 * [go-sev-guest](https://github.com/google/go-sev-guest)
 
+## Development
+
+Run all unit tests:
+
+    pip install -r requirements.txt
+    make test
+
+Check unit tests coverage:
+
+    pip install coverage
+    make coverage
+    # See HTML coverage report in htmlcov/
+
+Check Python type hints:
+
+    pip install mypy
+    make typecheck
+
+Check Python coding style:
+
+    pip install flake8
+    make lint
+
 ## Notes
 
 If you have any questions or issues you can create a new [issue
