@@ -20,7 +20,7 @@ command-line script.
 
 Clone the Github repo and run the script directly from the local directory:
 
-    git clone https://github.com/IBM/sev-snp-measure.git
+    git clone https://github.com/virtee/sev-snp-measure.git
     cd sev-snp-measure
     ./sev-snp-measure.py --help
 
@@ -170,7 +170,7 @@ Check Python coding style:
 ## Notes
 
 If you have any questions or issues you can create a new [issue
-here](https://github.com/IBM/sev-snp-measure/issues/new)
+here](https://github.com/virtee/sev-snp-measure/issues/new)
 
 Pull requests are welcome!
 
