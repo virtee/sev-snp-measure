@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.7 - 2023-06-27
+
 ### Modified
 - Github repository moved to the [VirTEE](https://github.com/virtee) organization.
 
