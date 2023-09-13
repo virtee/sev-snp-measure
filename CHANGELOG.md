@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Modified
+- Fix bad id-auth signature generation (by [@shuk777](https://github.com/shuk777)).
+
 ## 0.0.7 - 2023-06-27
 
 ### Modified
