@@ -13,13 +13,6 @@ from cryptography.hazmat.primitives.asymmetric import ec, utils
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 
-LaunchDigest = c_uint8 * 48
-ECParam = c_uint8 * 52
-ECSignature = c_uint8 * 512
-ECPubKey = c_uint8 * 1028
-Qx = c_uint8 * 72
-Qy = c_uint8 * 72
-
 DefaultIDs = bytes(0x20)
 DefaultVersion = 1
 DefaultGuestSVN = bytes(4)
@@ -29,6 +22,15 @@ CurveP384 = 2
 ECKeyLength = 1028
 ECSigLength = 512
 SnpSigLength = 72
+
+LaunchDigest = c_uint8 * 48
+ECParam = c_uint8 * 52
+ECSignature = c_uint8 * 512
+ECPubKey = c_uint8 * 1028
+Qx = c_uint8 * 72
+Qy = c_uint8 * 72
+SigR = c_uint8 * SnpSigLength
+SigS = c_uint8 * SnpSigLength
 
 
 def main() -> int:
@@ -84,8 +86,8 @@ class ECPublicKey(ctypes.Structure):
 
 class SnpSignature(ctypes.Structure):
     _fields_ = [
-        ("sig_r", ctypes.c_char * SnpSigLength),
-        ("sig_s", ctypes.c_char * SnpSigLength),
+        ("sig_r", SigR),
+        ("sig_s", SigS),
         ("reserved", ctypes.c_char * 368)
     ]
 
@@ -130,8 +132,8 @@ def sign_in_snp_format(priv_key: ec.EllipticCurvePrivateKey, data: bytes) -> byt
     sig_r = r.to_bytes(0x48, byteorder="little")
     sig_s = s.to_bytes(0x48, byteorder="little")
     signature = SnpSignature(
-        sig_r=sig_r,
-        sig_s=sig_s,
+        sig_r=SigR.from_buffer_copy(sig_r),
+        sig_s=SigS.from_buffer_copy(sig_s),
     )
     return bytes(signature)
 
