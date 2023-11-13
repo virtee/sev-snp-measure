@@ -182,15 +182,11 @@ class VMSA(object):
             xcr0=0x1,
         )
 
-    def __init__(self, sev_mode: SevMode, ap_eip: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
-        if sev_mode == SevMode.SEV_SNP:
-            sev_features = 0x1
-        else:
-            sev_features = 0x0
-
-        self.bsp_save_area = VMSA.build_save_area(self.BSP_EIP, sev_features, vcpu_sig, vmm_type)
+    def __init__(self, sev_mode: SevMode, ap_eip: int, vcpu_sig: int, guest_features: int,
+                 vmm_type: VMMType = VMMType.QEMU):
+        self.bsp_save_area = VMSA.build_save_area(self.BSP_EIP, guest_features, vcpu_sig, vmm_type)
         if ap_eip:
-            self.ap_save_area = VMSA.build_save_area(ap_eip, sev_features, vcpu_sig, vmm_type)
+            self.ap_save_area = VMSA.build_save_area(ap_eip, guest_features, vcpu_sig, vmm_type)
 
     def pages(self, vcpus: int) -> Iterator[bytes]:
         """

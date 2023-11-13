@@ -69,6 +69,10 @@ def main() -> int:
                         help='Initrd file to calculate hash from (use with --kernel)')
     parser.add_argument('--append', metavar='CMDLINE',
                         help='Kernel command line to calculate hash from (use with --kernel)')
+    parser.add_argument('--guest-features', metavar='VALUE', type=lambda x: int(x, 0),
+                        default=0x21,
+                        help="Hex representation of the guest kernel features expected to be included "
+                             "(defaults to 0x21); see README.md for possible values"),
     parser.add_argument('--output-format', choices=['hex', 'base64'], help='Measurement output format', default='hex')
     parser.add_argument('--snp-ovmf-hash', metavar='HASH', help='Precalculated hash of the OVMF binary (hex string)')
     parser.add_argument('--dump-vmsa', action='store_true',
@@ -104,7 +108,8 @@ def main() -> int:
             parser.error("--dump-vmsa is not availibe in the selected mode")
 
         ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf, args.kernel, args.initrd, args.append,
-                                      args.snp_ovmf_hash, vmm_type, args.dump_vmsa, args.svsm, args.vars_size)
+                                      args.guest_features, args.snp_ovmf_hash, vmm_type, args.dump_vmsa,
+                                      args.svsm, args.vars_size)
 
         print_measurement(ld, sev_mode, args.output_format, args.verbose)
     except RuntimeError as e:
