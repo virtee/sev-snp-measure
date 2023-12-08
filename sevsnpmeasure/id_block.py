@@ -155,6 +155,8 @@ def load_private_key_from_pem_file(pem_file_path: str) -> ec.EllipticCurvePrivat
 
 def marshal_ec_public_key(priv_key: ec.EllipticCurvePrivateKey) -> bytes:
     pub_key = priv_key.public_key()
+    if not isinstance(pub_key.curve, ec.SECP384R1):
+        raise ValueError('SNP only supports the EC curve P-384')
     x = pub_key.public_numbers().x
     y = pub_key.public_numbers().y
     qx = x.to_bytes(0x48, byteorder="little")

@@ -8,10 +8,10 @@ import base64
 from sevsnpmeasure import id_block
 
 # Generate test id_key
-# openssl genrsa -out keyfile/id_key_test.pem 2048
+# openssl ecparam -name secp384r1 -genkey -noout -out keyfile/id_key_test.pem
 
 # Generate test author_key
-# openssl genrsa -out keyfile/author_key_test.pem 2048
+# openssl ecparam -name secp384r1 -genkey -noout -out keyfile/author_key_test.pem
 
 
 class TestIdBlock(unittest.TestCase):
