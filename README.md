@@ -136,6 +136,7 @@ On a different machine that only has access to an older but compatible OVMF bina
 
 ## Related projects
 
+* [sev-snp-measure-go](https://github.com/virtee/sev-snp-measure-go): port of sev-snp-measure to Go
 * libvirt tools: [virt-dom-sev-validate](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-validate.py),
   [virt-dom-sev-vmsa-tool](https://gitlab.com/berrange/libvirt/-/blob/lgtm/tools/virt-dom-sev-vmsa-tool.py)
 * [sev Rust crate](https://github.com/virtee/sev) and [snpguest CLI tool](https://github.com/virtee/snpguest)
