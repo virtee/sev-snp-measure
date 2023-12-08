@@ -4,6 +4,7 @@
 
 ### Modified
 - Fix bad id-auth signature generation (by [@shuk777](https://github.com/shuk777)).
+- Verify keys given to snp-create-id-block are EC P-384 keys (by [@shuk777](https://github.com/shuk777)).
 
 ## 0.0.7 - 2023-06-27
 
