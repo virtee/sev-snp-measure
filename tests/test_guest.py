@@ -8,6 +8,10 @@ from sevsnpmeasure import guest
 from sevsnpmeasure import vcpu_types
 from sevsnpmeasure import vmm_types
 from sevsnpmeasure.sev_mode import SevMode
+import pathlib
+import tempfile
+import contextlib
+import os
 
 
 class TestGuest(unittest.TestCase):
@@ -161,6 +165,26 @@ class TestGuest(unittest.TestCase):
                 ld.hex(),
                 'c05d37600072dc5ff24bafc49410f0369ba3a37c130a7bb7055ac6878be300f7')
 
+    def test_seves_dump_vmsa(self):
+        """Test that SEV-ES mode creates vmsa files if requrested."""
+        fixtures_dir = pathlib.Path('tests/fixtures').absolute()
+        with tempfile.TemporaryDirectory() as tmp:
+            with push_dir(tmp):
+                guest.calc_launch_digest(
+                        SevMode.SEV_ES,
+                        4,
+                        vcpu_types.CPU_SIGS["EPYC-v4"],
+                        fixtures_dir / "ovmf_AmdSev_suffix.bin",
+                        "/dev/null",
+                        "/dev/null",
+                        "",
+                        dump_vmsa=True)
+                self.assertTrue(pathlib.Path("vmsa0.bin").exists())
+                self.assertTrue(pathlib.Path("vmsa1.bin").exists())
+                self.assertTrue(pathlib.Path("vmsa2.bin").exists())
+                self.assertTrue(pathlib.Path("vmsa3.bin").exists())
+                self.assertFalse(pathlib.Path("vmsa4.bin").exists())
+
     def test_seves_with_ovmfx64_and_kernel_should_fail(self):
         with self.assertRaises(RuntimeError) as c:
             guest.calc_launch_digest(
@@ -213,6 +237,25 @@ class TestGuest(unittest.TestCase):
         self.assertEqual(str(c.exception),
                          "Kernel specified but OVMF doesn't support kernel/initrd/cmdline measurement")
 
+    def test_snp_dump_vmsa(self):
+        """Test that SEV-SNP mode creates vmsa files if requrested."""
+        fixtures_dir = pathlib.Path('tests/fixtures').absolute()
+        with tempfile.TemporaryDirectory() as tmp:
+            with push_dir(tmp):
+                ovmf_hash = 'cab7e085874b3acfdbe2d96dcaa3125111f00c35c6fc9708464c2ae74bfdb048a198cb9a9ccae0b3e5e1a33f5f249819'
+                guest.calc_launch_digest(
+                        SevMode.SEV_SNP,
+                        1,
+                        vcpu_types.CPU_SIGS["EPYC-v4"],
+                        fixtures_dir / "ovmf_AmdSev_suffix.bin",
+                        "/dev/null",
+                        "/dev/null",
+                        "",
+                        snp_ovmf_hash_str=ovmf_hash,
+                        dump_vmsa=True)
+                self.assertTrue(pathlib.Path("vmsa0.bin").exists())
+                self.assertFalse(pathlib.Path("vmsa1.bin").exists())
+
     def test_sev_with_ovmfx64_without_kernel(self):
         ld = guest.calc_launch_digest(
                 SevMode.SEV,
@@ -225,3 +268,13 @@ class TestGuest(unittest.TestCase):
         self.assertEqual(
                 ld.hex(),
                 'af9d6c674b1ff04937084c98c99ca106b25c37b2c9541ac313e6e0c54426314f')
+
+@contextlib.contextmanager
+def push_dir(dir: str):
+    """Context managed switching of the working directory"""
+    previous = os.getcwd()
+    os.chdir(dir)
+    try:
+        yield
+    finally:
+        os.chdir(previous)

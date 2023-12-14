@@ -4,6 +4,7 @@
 #
 
 import hashlib
+import pathlib
 from typing import Optional
 
 from .gctx import GCTX
@@ -18,14 +19,16 @@ PAGE_MASK = 0xfff
 
 def calc_launch_digest(mode: SevMode, vcpus: int, vcpu_sig: int, ovmf_file: str,
                        kernel: str, initrd: str, append: str, snp_ovmf_hash_str: str = '',
-                       vmm_type: VMMType = VMMType.QEMU) -> bytes:
+                       vmm_type: VMMType = VMMType.QEMU, dump_vmsa: bool = False) -> bytes:
     if snp_ovmf_hash_str and mode != SevMode.SEV_SNP:
         raise ValueError("SNP OVMF hash only works with SNP")
 
     if mode == SevMode.SEV_SNP:
-        return snp_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, snp_ovmf_hash_str, vmm_type)
+        return snp_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, snp_ovmf_hash_str, vmm_type,
+                                      dump_vmsa=dump_vmsa)
     elif mode == SevMode.SEV_ES:
-        return seves_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, vmm_type=vmm_type)
+        return seves_calc_launch_digest(vcpus, vcpu_sig, ovmf_file, kernel, initrd, append, vmm_type=vmm_type,
+                                        dump_vmsa=dump_vmsa)
     elif mode == SevMode.SEV:
         return sev_calc_launch_digest(ovmf_file, kernel, initrd, append)
     else:
@@ -81,7 +84,7 @@ def calc_snp_ovmf_hash(ovmf_file: str) -> bytes:
 
 def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str,
                            kernel: str, initrd: str, append: str, ovmf_hash_str: str,
-                           vmm_type: VMMType = VMMType.QEMU) -> bytes:
+                           vmm_type: VMMType = VMMType.QEMU, dump_vmsa: bool = False) -> bytes:
 
     gctx = GCTX()
     ovmf = OVMF(ovmf_file)
@@ -101,14 +104,16 @@ def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str,
     snp_update_metadata_pages(gctx, ovmf, sev_hashes, vmm_type)
 
     vmsa = VMSA(SevMode.SEV_SNP, ovmf.sev_es_reset_eip(), vcpu_sig, vmm_type)
-    for vmsa_page in vmsa.pages(vcpus):
+    for i, vmsa_page in enumerate(vmsa.pages(vcpus)):
         gctx.update_vmsa_page(vmsa_page)
+        if dump_vmsa:
+            pathlib.Path(f"vmsa{i}.bin").write_bytes(vmsa_page)
 
     return gctx.ld()
 
 
 def seves_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: str, initrd: str, append: str,
-                             vmm_type: VMMType = VMMType.QEMU) -> bytes:
+                             vmm_type: VMMType = VMMType.QEMU, dump_vmsa: bool = False) -> bytes:
     ovmf = OVMF(ovmf_file)
     launch_hash = hashlib.sha256(ovmf.data())
     if kernel:
@@ -117,8 +122,10 @@ def seves_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str, kernel: 
         sev_hashes_table = SevHashes(kernel, initrd, append).construct_table()
         launch_hash.update(sev_hashes_table)
     vmsa = VMSA(SevMode.SEV_ES, ovmf.sev_es_reset_eip(), vcpu_sig, vmm_type)
-    for vmsa_page in vmsa.pages(vcpus):
+    for i, vmsa_page in enumerate(vmsa.pages(vcpus)):
         launch_hash.update(vmsa_page)
+        if dump_vmsa:
+            pathlib.Path(f"vmsa{i}.bin").write_bytes(vmsa_page)
     return launch_hash.digest()
 
 
