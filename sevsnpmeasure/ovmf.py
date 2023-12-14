@@ -8,6 +8,8 @@ from ctypes import c_uint8, c_uint16, c_uint32
 from enum import Enum
 import uuid
 
+FOUR_GB = 0x100000000
+
 
 # Types of sections declared by OVMF SEV Metadata, as appears in:
 # https://github.com/tianocore/edk2/blob/edk2-stable202205/OvmfPkg/ResetVector/X64/OvmfSevMetadata.asm
@@ -55,23 +57,29 @@ class OvmfFooterTableEntry(ctypes.LittleEndianStructure):
 
 
 class OVMF(object):
-    FOUR_GB = 0x100000000
     OVMF_TABLE_FOOTER_GUID = "96b582de-1fb2-45f7-baea-a366c55a082d"
     SEV_HASH_TABLE_RV_GUID = "7255371f-3a3b-4b04-927b-1da6efa8d454"
     SEV_ES_RESET_BLOCK_GUID = "00f771de-1a7e-4fcb-890e-68c77e2fb44e"
     OVMF_SEV_META_DATA_GUID = "dc886566-984a-4798-a75e-5585a7bf67cc"
 
-    def __init__(self, _filename: str):
+    def __init__(self, _filename: str, end_at: int = FOUR_GB):
         with open(_filename, "rb") as f:
             self._data = f.read()
         self._parse_footer_table()
         self._parse_sev_metadata()
+        self._gpa = end_at - len(self._data)
 
     def data(self) -> bytes:
         return self._data
 
+    def size(self) -> int:
+        return len(self._data)
+
+    def end_gpa(self) -> int:
+        return self.gpa() + self.size()
+
     def gpa(self) -> int:
-        return self.FOUR_GB - len(self._data)
+        return self._gpa
 
     def table_item(self, guid: str) -> bytes:
         return self._table[guid]
