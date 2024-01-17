@@ -142,3 +142,15 @@ class OVMF(object):
             offset = i * ctypes.sizeof(OvmfSevMetadataSectionDesc)
             item = OvmfSevMetadataSectionDesc.from_buffer_copy(items, offset)
             self._metadata_items.append(item)
+
+
+class SVSM(OVMF):
+    SVSM_INFO_GUID = "a789a612-0597-4c4b-a49f-cbb1fe9d1ddd"
+
+    def sev_es_reset_eip(self) -> int:
+        # See https://github.com/coconut-svsm/qemu/blob/0e64fb84eeeb86e2b263068c098a64d2f3d5a661/target/i386/sev.c#L2175
+
+        if self.SVSM_INFO_GUID not in self._table:
+            raise RuntimeError("Can't find SVSM_INFO_GUID entry in SVSM table")
+        entry = self._table[self.SVSM_INFO_GUID]
+        return int.from_bytes(entry[:4], byteorder='little') + self.gpa()

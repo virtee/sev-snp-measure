@@ -24,5 +24,9 @@ class TestSevMode(unittest.TestCase):
         self.assertEqual(SevMode.from_str("SEV-SNP"), SevMode.SEV_SNP)
         self.assertEqual(SevMode.from_str("SNP"), SevMode.SEV_SNP)
 
+        self.assertEqual(SevMode.from_str("SnP:sVsM"), SevMode.SEV_SNP_SVSM)
+        self.assertEqual(SevMode.from_str("SNP:SVSM"), SevMode.SEV_SNP_SVSM)
+        self.assertEqual(SevMode.from_str("sev-SnP:sVsM"), SevMode.SEV_SNP_SVSM)
+
         with self.assertRaises(ValueError):
             SevMode.from_str("foo")

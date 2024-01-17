@@ -201,3 +201,44 @@ class VMSA(object):
                 yield bytes(self.bsp_save_area)
             else:
                 yield bytes(self.ap_save_area)
+
+
+class VMSA_SVSM(object):
+    BSP_EIP = 0xfffffff0
+
+    @staticmethod
+    def build_save_area(eip: int, sev_features: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
+        return SevEsSaveArea(
+            es=VmcbSeg(16, 0xc93, 0xffffffff, 0),
+            cs=VmcbSeg(8, 0xc9b, 0xffffffff, 0),
+            ss=VmcbSeg(16, 0xc93, 0xffffffff, 0),
+            ds=VmcbSeg(16, 0xc93, 0xffffffff, 0),
+            fs=VmcbSeg(16, 0xc93, 0xffffffff, 0),
+            gs=VmcbSeg(0, 0x093, 0xffff, 0),
+            gdtr=VmcbSeg(0, 0, 0xffff, 0),
+            idtr=VmcbSeg(0, 0, 0xffff, 0),
+            ldtr=VmcbSeg(0, 0x82, 0xffff, 0),
+            tr=VmcbSeg(0, 0x8b, 0xffff, 0),
+            efer=0x1000,
+            cr4=0x40,
+            cr0=0x11,
+            dr7=0x400,
+            dr6=0xffff0ff0,
+            rflags=0x2,
+            rip=eip,
+            g_pat=0x7040600070406,  # PAT MSR: See AMD APM Vol 2, Section A.3
+            rdx=vcpu_sig,
+            sev_features=sev_features,
+            xcr0=0x1,
+        )
+
+    def __init__(self, ap_eip: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
+        sev_features = 0x1
+        self.save_area = VMSA_SVSM.build_save_area(ap_eip, sev_features, vcpu_sig, vmm_type)
+
+    def pages(self, vcpus: int) -> Iterator[bytes]:
+        """
+        Generate VMSA pages
+        """
+        for i in range(vcpus):
+            yield bytes(self.save_area)

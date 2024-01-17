@@ -269,6 +269,67 @@ class TestGuest(unittest.TestCase):
                 ld.hex(),
                 'af9d6c674b1ff04937084c98c99ca106b25c37b2c9541ac313e6e0c54426314f')
 
+    def test_snp_svsm_4_vcpus(self):
+        """Test that SNP-SVSM mode produces correct measurement value when using 4 vCPUs"""
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP_SVSM,
+                4,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
+                'tests/fixtures/svsm_ovmf.fd',
+                None,
+                None,
+                None,
+                None,
+                vmm_types.VMMType.QEMU,
+                False,
+                'tests/fixtures/svsm.bin',
+                540672)
+        self.assertEqual(
+                ld.hex(),
+                '265aed64f2454253f6b19e49e17041ef052dedf964dd8d2740794a06aee3a720c475e3643a1b7e26b9efce7a107bf77f')
+
+    def test_snp_svsm_2_vcpus(self):
+        """Test that SNP-SVSM mode produces correct measurement value when using 2 vCPUs"""
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP_SVSM,
+                2,
+                vcpu_types.CPU_SIGS["EPYC-v4"],
+                'tests/fixtures/svsm_ovmf.fd',
+                None,
+                None,
+                None,
+                None,
+                vmm_types.VMMType.QEMU,
+                False,
+                'tests/fixtures/svsm.bin',
+                540672)
+        self.assertEqual(
+                ld.hex(),
+                '4ae03ca013690e956bc1eb16bc1c6465788dba64ad88a650db09216fa9cdddf06167bfce810eba8988108e71458dd68b')
+
+    def test_snp_svsm_dump_vmsa(self):
+        """Test that SNP-SVSM mode creates vmsa files if requrested."""
+        fixtures_dir = pathlib.Path('tests/fixtures').absolute()
+        with tempfile.TemporaryDirectory() as tmp:
+            with push_dir(tmp):
+                guest.calc_launch_digest(
+                        SevMode.SEV_SNP_SVSM,
+                        2,
+                        vcpu_types.CPU_SIGS["EPYC-v4"],
+                        fixtures_dir / 'svsm_ovmf.fd',
+                        None,
+                        None,
+                        None,
+                        None,
+                        vmm_types.VMMType.QEMU,
+                        True,
+                        fixtures_dir / 'svsm.bin',
+                        540672)
+                self.assertTrue(pathlib.Path("vmsa0.bin").exists())
+                self.assertTrue(pathlib.Path("vmsa1.bin").exists())
+                self.assertFalse(pathlib.Path("vmsa2.bin").exists())
+
+
 @contextlib.contextmanager
 def push_dir(dir: str):
     """Context managed switching of the working directory"""
