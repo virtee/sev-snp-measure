@@ -29,24 +29,25 @@ Clone the Github repo and run the script directly from the local directory:
 ### sev-snp-measure
 ```
 $ sev-snp-measure --help
-usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp,snp:ovmf-hash} [--vcpus N]
-                       [--vcpu-type CPUTYPE] [--vcpu-sig VALUE] [--vcpu-family FAMILY]
+usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp,snp:ovmf-hash,snp:svsm}
+                       [--vcpus N] [--vcpu-type CPUTYPE] [--vcpu-sig VALUE] [--vcpu-family FAMILY]
                        [--vcpu-model MODEL] [--vcpu-stepping STEPPING] [--vmm-type VMMTYPE] --ovmf
                        PATH [--kernel PATH] [--initrd PATH] [--append CMDLINE]
-                       [--output-format {hex,base64}] [--snp-ovmf-hash HASH]
+                       [--output-format {hex,base64}] [--snp-ovmf-hash HASH] [--dump-vmsa]
+                       [--vars-size VARS_SIZE] [--svsm SVSM]
 
 Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   -v, --verbose
-  --mode {sev,seves,snp,snp:ovmf-hash}
+  --mode {sev,seves,snp,snp:ovmf-hash,snp:svsm}
                         Guest mode
   --vcpus N             Number of guest vcpus
   --vcpu-type CPUTYPE   Type of guest vcpu (EPYC, EPYC-v1, EPYC-v2, EPYC-IBPB, EPYC-v3, EPYC-v4,
                         EPYC-Rome, EPYC-Rome-v1, EPYC-Rome-v2, EPYC-Rome-v3, EPYC-Milan, EPYC-
-                        Milan-v1, EPYC-Milan-v2)
+                        Milan-v1, EPYC-Milan-v2, EPYC-Genoa, EPYC-Genoa-v1)
   --vcpu-sig VALUE      Guest vcpu signature value
   --vcpu-family FAMILY  Guest vcpu family
   --vcpu-model MODEL    Guest vcpu model
@@ -60,6 +61,10 @@ optional arguments:
   --output-format {hex,base64}
                         Measurement output format
   --snp-ovmf-hash HASH  Precalculated hash of the OVMF binary (hex string)
+  --dump-vmsa           Write measured VMSAs to vmsa<N>.bin (seves, snp, and snp:svsm modes only)
+  --vars-size VARS_SIZE
+                        OVMF_VARS size in bytes (snp:svsm mode only)
+  --svsm SVSM           SVSM binary (snp:svsm mode only)
 ```
 
 For example:
