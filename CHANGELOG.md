@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Add `--mode=snp:svsm` to calculate SNP measurements when starting with SVSM
+  under QEMU (by [osteffenrh](https://github.com/osteffenrh)).
+- Add `--dump-vmsa` to write measured VMSAs to local files for debugging (by
+  [osteffenrh](https://github.com/osteffenrh)).
+
 ### Modified
 - Fix bad id-auth signature generation (by [@shuk777](https://github.com/shuk777)).
 - Verify keys given to snp-create-id-block are EC P-384 keys (by [@shuk777](https://github.com/shuk777)).
