@@ -49,7 +49,8 @@ def main() -> int:
                                      description='Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement')
     parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}')
     parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('--mode', choices=['sev', 'seves', 'snp', 'snp:ovmf-hash'], help='Guest mode', required=True)
+    parser.add_argument('--mode', choices=['sev', 'seves', 'snp', 'snp:ovmf-hash', 'snp:svsm'], help='Guest mode',
+                        required=True)
     parser.add_argument('--vcpus', metavar='N', type=int, help='Number of guest vcpus', default=None)
     parser.add_argument('--vcpu-type', metavar='CPUTYPE', choices=list(vcpu_types.CPU_SIGS.keys()),
                         help=f"Type of guest vcpu ({', '.join(vcpu_types.CPU_SIGS.keys())})",
@@ -70,6 +71,10 @@ def main() -> int:
                         help='Kernel command line to calculate hash from (use with --kernel)')
     parser.add_argument('--output-format', choices=['hex', 'base64'], help='Measurement output format', default='hex')
     parser.add_argument('--snp-ovmf-hash', metavar='HASH', help='Precalculated hash of the OVMF binary (hex string)')
+    parser.add_argument('--dump-vmsa', action='store_true',
+                        help='Write measured VMSAs to vmsa<N>.bin (seves, snp, and snp:svsm modes only)')
+    parser.add_argument('--vars-size', type=int, help='OVMF_VARS size in bytes (snp:svsm mode only)')
+    parser.add_argument('--svsm', type=str, help='SVSM binary (snp:svsm mode only)')
     args = parser.parse_args()
 
     if args.mode == 'snp:ovmf-hash':
@@ -94,9 +99,12 @@ def main() -> int:
 
     try:
         sev_mode = SevMode.from_str(args.mode)
-        ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf,
-                                      args.kernel, args.initrd, args.append, args.snp_ovmf_hash,
-                                      vmm_type=vmm_type)
+
+        if args.dump_vmsa is True and sev_mode not in [SevMode.SEV_ES, SevMode.SEV_SNP, SevMode.SEV_SNP_SVSM]:
+            parser.error("--dump-vmsa is not availibe in the selected mode")
+
+        ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf, args.kernel, args.initrd, args.append,
+                                      args.snp_ovmf_hash, vmm_type, args.dump_vmsa, args.svsm, args.vars_size)
 
         print_measurement(ld, sev_mode, args.output_format, args.verbose)
     except RuntimeError as e:
