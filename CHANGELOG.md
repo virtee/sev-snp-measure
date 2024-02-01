@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.8 - 2024-02-01
+
 ### Added
 - Add `--mode=snp:svsm` to calculate SNP measurements when starting with SVSM
   under QEMU (by [osteffenrh](https://github.com/osteffenrh)).
