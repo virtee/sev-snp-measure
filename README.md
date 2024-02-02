@@ -32,7 +32,7 @@ $ sev-snp-measure --help
 usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp,snp:ovmf-hash,snp:svsm}
                        [--vcpus N] [--vcpu-type CPUTYPE] [--vcpu-sig VALUE] [--vcpu-family FAMILY]
                        [--vcpu-model MODEL] [--vcpu-stepping STEPPING] [--vmm-type VMMTYPE] --ovmf
-                       PATH [--kernel PATH] [--initrd PATH] [--append CMDLINE]
+                       PATH [--kernel PATH] [--initrd PATH] [--append CMDLINE] [--guest-features VALUE]
                        [--output-format {hex,base64}] [--snp-ovmf-hash HASH] [--dump-vmsa]
                        [--vars-size VARS_SIZE] [--svsm SVSM]
 
@@ -58,6 +58,9 @@ options:
   --kernel PATH         Kernel file to calculate hash from
   --initrd PATH         Initrd file to calculate hash from (use with --kernel)
   --append CMDLINE      Kernel command line to calculate hash from (use with --kernel)
+
+
+  --guest-features      Hex representation of the guest kernel features expected to be included (defaults to 0x21); see README.md for possible values.
   --output-format {hex,base64}
                         Measurement output format
   --snp-ovmf-hash HASH  Precalculated hash of the OVMF binary (hex string)
@@ -97,7 +100,7 @@ from sevsnpmeasure import vcpu_types
 from sevsnpmeasure.sev_mode import SevMode
 
 ld = guest.calc_launch_digest(SevMode.SEV_SNP, vcpus_num, vcpu_types.CPU_SIGS["EPYC-v4"],
-                              ovmf_path, kernel_path, initrd_path, cmdline_str)
+                              ovmf_path, kernel_path, initrd_path, cmdline_str, guest_features)
 print("Calculated measurement:", ld.hex())
 
 block = id_block.snp_calc_id_block(ld,"id_key_file","author_key_file")
@@ -118,6 +121,30 @@ example, the following 3 invocations are identical:
 1. `sev-snp-measure --vcpu-type=EPYC-v4 ...`
 2. `sev-snp-measure --vcpu-sig=0x800f12 ...`
 3. `sev-snp-measure --vcpu-family=23 --vcpu-model=1 --vcpu-stepping=2 ...`
+
+## SEV-SNP Guest Feature Field Values
+Prior to Linux Kernel version 6.6, the default value was always calculated to `0x1`, as the kernel only supported `SNPActive`. After the release of Linux Kernel 6.6, additional features were made available some of them enabled by default. Because of this, the new default value is `0x21` which is `SNPActive + DebugSwap`. Other possible combinations my be derived by generating a 64-bit hex value from the following chart:
+
+| BIT FIELD | Description |
+|:---------:|:------------:|
+| 0 | SNPActive |
+| 1 | vTOM |
+| 2 | ReflectVC |
+| 3 | RestrictedInjection |
+| 4 | AlternateInjection |
+| 5 | DebugSwap |
+| 6 | PreventHostIBS |
+| 7 | BTBIsolation |
+| 8 | VmplSSS |
+| 9 | SecureTSC |
+| 10 | VmgexitParameter |
+| 11 | Reserved, SBZ |
+| 12 | IbsVirtualization |
+| 13 | Reserved, SBZ |
+| 14 | VmsaRegProt |
+| 15 | SmtProtection |
+| 63:16 | Reserved, SBZ |
+
 
 ## Precalculated OVMF hashes
 
