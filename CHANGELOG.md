@@ -2,13 +2,17 @@
 
 ## Unreleased
 
+### Added
+- Add optional `--vars-file` (besides `--vars-size`) for SNP-SVSM mode (by
+  [@osteffenrh](https://github.com/osteffenrh)).
+
 ## 0.0.8 - 2024-02-01
 
 ### Added
 - Add `--mode=snp:svsm` to calculate SNP measurements when starting with SVSM
-  under QEMU (by [osteffenrh](https://github.com/osteffenrh)).
+  under QEMU (by [@osteffenrh](https://github.com/osteffenrh)).
 - Add `--dump-vmsa` to write measured VMSAs to local files for debugging (by
-  [osteffenrh](https://github.com/osteffenrh)).
+  [@osteffenrh](https://github.com/osteffenrh)).
 
 ### Modified
 - Fix bad id-auth signature generation (by [@shuk777](https://github.com/shuk777)).
