@@ -6,6 +6,9 @@
 - Add optional `--vars-file` (besides `--vars-size`) for SNP-SVSM mode (by
   [@osteffenrh](https://github.com/osteffenrh)).
 
+### Modified
+- Updated dependencies: cryptography to 42.0.0
+
 ## 0.0.8 - 2024-02-01
 
 ### Added
