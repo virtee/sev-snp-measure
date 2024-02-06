@@ -32,9 +32,10 @@ $ sev-snp-measure --help
 usage: sev-snp-measure [-h] [--version] [-v] --mode {sev,seves,snp,snp:ovmf-hash,snp:svsm}
                        [--vcpus N] [--vcpu-type CPUTYPE] [--vcpu-sig VALUE] [--vcpu-family FAMILY]
                        [--vcpu-model MODEL] [--vcpu-stepping STEPPING] [--vmm-type VMMTYPE] --ovmf
-                       PATH [--kernel PATH] [--initrd PATH] [--append CMDLINE] [--guest-features VALUE]
-                       [--output-format {hex,base64}] [--snp-ovmf-hash HASH] [--dump-vmsa]
-                       [--vars-size VARS_SIZE] [--svsm SVSM]
+                       PATH [--kernel PATH] [--initrd PATH] [--append CMDLINE]
+                       [--guest-features VALUE] [--output-format {hex,base64}]
+                       [--snp-ovmf-hash HASH] [--dump-vmsa] [--svsm PATH]
+                       [--vars-size SIZE | --vars-file PATH]
 
 Calculate AMD SEV/SEV-ES/SEV-SNP guest launch measurement
 
@@ -58,22 +59,42 @@ options:
   --kernel PATH         Kernel file to calculate hash from
   --initrd PATH         Initrd file to calculate hash from (use with --kernel)
   --append CMDLINE      Kernel command line to calculate hash from (use with --kernel)
-
-
-  --guest-features      Hex representation of the guest kernel features expected to be included (defaults to 0x21); see README.md for possible values.
+  --guest-features VALUE
+                        Hex representation of the guest kernel features expected to be included
+                        (defaults to 0x21); see README.md for possible values
   --output-format {hex,base64}
                         Measurement output format
   --snp-ovmf-hash HASH  Precalculated hash of the OVMF binary (hex string)
   --dump-vmsa           Write measured VMSAs to vmsa<N>.bin (seves, snp, and snp:svsm modes only)
-  --vars-size VARS_SIZE
-                        OVMF_VARS size in bytes (snp:svsm mode only)
-  --svsm SVSM           SVSM binary (snp:svsm mode only)
+
+snp:svsm Mode:
+  AMD SEV-SNP with Coconut-SVSM. This mode additionally requires --svsm and either --vars-file
+  or --vars-size to be set.
+
+  --svsm PATH           SVSM binary
+  --vars-size SIZE      Size of the OVMF_VARS file in bytes (conflicts with --vars-file)
+  --vars-file PATH      OVMF_VARS file (conflicts with --vars-size)
 ```
 
-For example:
+### Example: SNP mode
 
-    $ sev-snp-measure --mode snp --vcpus=1 --vcpu-type=EPYC-v4 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
-    1c8bf2f320add50cb22ca824c17f3fa51a7a4296a4a3113698c2e31b50c2dcfa7e36dea3ebc3a9411061c30acffc6d5a
+```
+$ sev-snp-measure --mode snp --vcpus=1 --vcpu-type=EPYC-v4 --ovmf=OVMF.fd --kernel=vmlinuz --initrd=initrd.img --append="console=ttyS0 loglevel=7"
+1c8bf2f320add50cb22ca824c17f3fa51a7a4296a4a3113698c2e31b50c2dcfa7e36dea3ebc3a9411061c30acffc6d5a
+```
+
+### Example: SNP:SVSM mode
+
+```
+$ sev-snp-measure \
+    --mode snp:svsm \
+    --vmm-type=QEMU \
+    --vcpus=4 \
+    --vcpu-type=EPYC-v4 \
+    --ovmf=OVMF_CODE.fd \
+    --svsm=svsm.bin --vars-file=OVMF_VARS.fd
+3447e476b226e317890a350003b56ee17becb48d1dc25dd6b5819a1192df3238f50cda0f0216bd5ae2a992ad7ab961c4
+```
 
 ### snp-create-id-block
 ```

@@ -4,7 +4,7 @@ test:
 	python3 -m unittest discover --verbose tests/
 
 lint:
-	flake8 . --count --max-complexity=10 --max-line-length=127 --statistics
+	flake8 . --count --statistics
 
 typecheck:
 	mypy .

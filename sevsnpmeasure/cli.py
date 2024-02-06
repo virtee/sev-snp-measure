@@ -6,6 +6,7 @@
 import argparse
 import base64
 import sys
+import pathlib
 
 from sevsnpmeasure import guest
 from sevsnpmeasure import vcpu_types
@@ -77,8 +78,17 @@ def main() -> int:
     parser.add_argument('--snp-ovmf-hash', metavar='HASH', help='Precalculated hash of the OVMF binary (hex string)')
     parser.add_argument('--dump-vmsa', action='store_true',
                         help='Write measured VMSAs to vmsa<N>.bin (seves, snp, and snp:svsm modes only)')
-    parser.add_argument('--vars-size', type=int, help='OVMF_VARS size in bytes (snp:svsm mode only)')
-    parser.add_argument('--svsm', type=str, help='SVSM binary (snp:svsm mode only)')
+
+    arg_group_svsm = parser.add_argument_group(title='snp:svsm Mode',
+                                               description='AMD SEV-SNP with Coconut-SVSM. This mode additionally requires '
+                                               '--svsm and either --vars-file or --vars-size to be set.')
+    arg_group_svsm.add_argument('--svsm', type=str, metavar='PATH', help='SVSM binary')
+    arg_group_ovmf_vars = arg_group_svsm.add_mutually_exclusive_group(required=False)
+    arg_group_ovmf_vars.add_argument('--vars-size', type=int, metavar='SIZE', help='Size of the OVMF_VARS file in bytes '
+                                     '(conflicts with --vars-file)')
+    arg_group_ovmf_vars.add_argument('--vars-file', type=str, metavar='PATH', help='OVMF_VARS file '
+                                     '(conflicts with --vars-size)')
+
     args = parser.parse_args()
 
     if args.mode == 'snp:ovmf-hash':
@@ -102,14 +112,24 @@ def main() -> int:
     vcpu_sig = get_vcpu_sig(parser, args, vmm_type)
 
     try:
+        vars_size = 0
         sev_mode = SevMode.from_str(args.mode)
+
+        if sev_mode == SevMode.SEV_SNP_SVSM:
+
+            if args.vars_file:
+                vars_size = pathlib.Path(args.vars_file).stat().st_size
+            elif args.vars_size:
+                vars_size = args.vars_size
+            else:
+                parser.error("snp:svsm mode requires --vars-size or --vars-file")
 
         if args.dump_vmsa is True and sev_mode not in [SevMode.SEV_ES, SevMode.SEV_SNP, SevMode.SEV_SNP_SVSM]:
             parser.error("--dump-vmsa is not availibe in the selected mode")
 
         ld = guest.calc_launch_digest(sev_mode, args.vcpus, vcpu_sig, args.ovmf, args.kernel, args.initrd, args.append,
                                       args.guest_features, args.snp_ovmf_hash, vmm_type, args.dump_vmsa,
-                                      args.svsm, args.vars_size)
+                                      args.svsm, vars_size)
 
         print_measurement(ld, sev_mode, args.output_format, args.verbose)
     except RuntimeError as e:
