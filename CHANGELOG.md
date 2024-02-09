@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.9 - 2024-02-09
+
 ### Added
 - Add optional `--vars-file` (besides `--vars-size`) for SNP-SVSM mode (by
   [@osteffenrh](https://github.com/osteffenrh)).

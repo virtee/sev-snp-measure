@@ -13,7 +13,7 @@ from sevsnpmeasure import vcpu_types
 from sevsnpmeasure import vmm_types
 from .sev_mode import SevMode
 
-VERSION = '0.0.8'
+VERSION = '0.0.9'
 
 
 def auto_base_int(s: str) -> int:
