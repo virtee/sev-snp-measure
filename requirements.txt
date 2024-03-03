@@ -1,2 +1,2 @@
-cryptography==42.0.0
+cryptography==42.0.4
 types-cryptography
