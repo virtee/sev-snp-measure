@@ -71,9 +71,9 @@ def main() -> int:
     parser.add_argument('--append', metavar='CMDLINE',
                         help='Kernel command line to calculate hash from (use with --kernel)')
     parser.add_argument('--guest-features', metavar='VALUE', type=lambda x: int(x, 0),
-                        default=0x21,
+                        default=0x1,
                         help="Hex representation of the guest kernel features expected to be included "
-                             "(defaults to 0x21); see README.md for possible values"),
+                             "(defaults to 0x1); see README.md for possible values"),
     parser.add_argument('--output-format', choices=['hex', 'base64'], help='Measurement output format', default='hex')
     parser.add_argument('--snp-ovmf-hash', metavar='HASH', help='Precalculated hash of the OVMF binary (hex string)')
     parser.add_argument('--dump-vmsa', action='store_true',

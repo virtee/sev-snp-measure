@@ -61,7 +61,7 @@ options:
   --append CMDLINE      Kernel command line to calculate hash from (use with --kernel)
   --guest-features VALUE
                         Hex representation of the guest kernel features expected to be included
-                        (defaults to 0x21); see README.md for possible values
+                        (defaults to 0x1); see README.md for possible values
   --output-format {hex,base64}
                         Measurement output format
   --snp-ovmf-hash HASH  Precalculated hash of the OVMF binary (hex string)
