@@ -7,6 +7,11 @@
 ### Added
 - Add optional `--vars-file` (besides `--vars-size`) for SNP-SVSM mode (by
   [@osteffenrh](https://github.com/osteffenrh)).
+- Add optional `--guest-features` to set the value of the SEV features field in
+  the VMSA.  This value is set to 0x1 by host Linux kernel older than 6.6, and
+  to 0x21 (the default) in later kernels.  Note that this is a **BREAKING
+  CHANGE** for kernels older than 6.6 (run with `--guest-features=0x1` to get
+  the correct behaviour there).
 
 ### Modified
 - Updated dependencies: cryptography to 42.0.0
