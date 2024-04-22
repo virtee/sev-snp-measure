@@ -31,8 +31,8 @@ class TestGuest(unittest.TestCase):
                 snp_ovmf_hash_str=ovmf_hash)
         self.assertEqual(
                 ld.hex(),
-                'a076e1b0e6cf55fd94c82e2c25245f8c15f76690b941ba37'
-                '9b31527f82eafe7ad489777ff510d080bac9cd14d41bc205')
+                'aa6f24465c304e3ad553a18069510996fc92a84f48ae2140'
+                'cb95dfbd422cdb14087588fb6eec89ef0a65e6d376d9a300')
 
     def test_snp_ovmf_hash_gen_feature_snp_only(self):
         ovmf_hash = 'cab7e085874b3acfdbe2d96dcaa3125111f00c35c6fc9708464c2ae74bfdb048a198cb9a9ccae0b3e5e1a33f5f249819'
@@ -48,8 +48,8 @@ class TestGuest(unittest.TestCase):
                 snp_ovmf_hash_str=ovmf_hash)
         self.assertEqual(
                 ld.hex(),
-                'db06fb267824b1ccb56edbe2a9c2ce88841bca5090dc6dac'
-                '91d9cd30f3c2c0bf42daccb30d55d6625bfbf0dae5c50c6d')
+                '3c018b826531c5f625f10004d51ee51ab5dbfaf1fdd79998'
+                'ab649cff11b4afbdb2f50941d2a23b5d77fe00cf988242e7')
 
     # Test of we can a full LD from the OVMF hash
     def test_snp_ovmf_hash_full_default(self):
@@ -71,8 +71,8 @@ class TestGuest(unittest.TestCase):
                 snp_ovmf_hash_str=ovmf_hash)
         self.assertEqual(
                 ld.hex(),
-                '314e4f0794187ffef05702a36546ea5fe02698041b7f7f17'
-                'd9f418da2d5e4d5cff25256cef9d34888a0dd64dea438780')
+                '2b9ca4d24c46845280fdca6f0ca0edf0f704bf179243e5c1'
+                'b139acf3668ce7bc040e12d16b2ee8738aeaa39faddc8912')
 
     def test_snp_ovmf_hash_full_feature_snp_only(self):
         ovmf_hash = guest.calc_snp_ovmf_hash("tests/fixtures/ovmf_AmdSev_suffix.bin").hex()
@@ -93,8 +93,8 @@ class TestGuest(unittest.TestCase):
                 snp_ovmf_hash_str=ovmf_hash)
         self.assertEqual(
                 ld.hex(),
-                'f07864303ad8243132029e8110b92805c78d1135a15da75f'
-                '67abb9a711d78740347f24ee76f603e650ec4adf3611cc1e'
+                '72b3f3c1ed0df9e5279eb2317a9861be3b878537e8513b31'
+                '8b49c1e184f6228e3ff367d133a8688f430e412ba66f558f'
             )
 
     def test_snp_ec2_default(self):
@@ -141,8 +141,8 @@ class TestGuest(unittest.TestCase):
                 0x21)
         self.assertEqual(
                 ld.hex(),
-                '314e4f0794187ffef05702a36546ea5fe02698041b7f7f17'
-                'd9f418da2d5e4d5cff25256cef9d34888a0dd64dea438780')
+                '2b9ca4d24c46845280fdca6f0ca0edf0f704bf179243e5c1'
+                'b139acf3668ce7bc040e12d16b2ee8738aeaa39faddc8912')
 
     def test_snp_guest_feature_snp_only(self):
         ld = guest.calc_launch_digest(
@@ -156,8 +156,8 @@ class TestGuest(unittest.TestCase):
                 0x1)
         self.assertEqual(
                 ld.hex(),
-                'f07864303ad8243132029e8110b92805c78d1135a15da75f'
-                '67abb9a711d78740347f24ee76f603e650ec4adf3611cc1e')
+                '72b3f3c1ed0df9e5279eb2317a9861be3b878537e8513b31'
+                '8b49c1e184f6228e3ff367d133a8688f430e412ba66f558f')
 
     def test_snp_without_kernel_default(self):
         ld = guest.calc_launch_digest(
@@ -171,8 +171,8 @@ class TestGuest(unittest.TestCase):
                 0x21)
         self.assertEqual(
                 ld.hex(),
-                '6d9054ed9872a64c968cfbcfa1247cafa792e3f9a395306d'
-                '95c9937aaa081c643d25f369ccbd34409dafcae90bff55f3')
+                'd35ca073e73701aa476d9d1b2feeee9efd935b7ec9dc43a0'
+                '105857f506addb48ba3a1d443e5c10db430ad1a436ac5b2c')
 
     def test_snp_without_kernel_feature_snp_only(self):
         ld = guest.calc_launch_digest(
@@ -186,8 +186,8 @@ class TestGuest(unittest.TestCase):
                 0x1)
         self.assertEqual(
                 ld.hex(),
-                'e5e6be5a8fa6256f0245666bb237e2d028b7928148ce78d5'
-                '1b8a64dc9506c377709a5b5d7ab75554593bced304fcff93')
+                'c4ee889e2ca38dc7137f5a448c56960a1eb5c08919fd2107'
+                'a1249eb899afda42be9ba11e417530938cfa8d62a5890557')
 
     def test_snp_with_multiple_vcpus_default(self):
         ld = guest.calc_launch_digest(
@@ -201,8 +201,8 @@ class TestGuest(unittest.TestCase):
                 0x21)
         self.assertEqual(
                 ld.hex(),
-                '3aa1bdf5a87fad15960f099e82a09e428901c590f2b68d71'
-                'aa246c168db5e75daf4819d017a9530c56bed2da5c0cdbd7')
+                '6258fc4d3c60d6964de64811587a903f309b9391efdccd44'
+                '8bb8bc39b78c1d153378077ca37e32d06d6ead319a5c7bce')
 
     def test_snp_with_multiple_vcpus_feature_snp_only(self):
         ld = guest.calc_launch_digest(
@@ -216,8 +216,8 @@ class TestGuest(unittest.TestCase):
                 0x1)
         self.assertEqual(
                 ld.hex(),
-                '1c784beb8c49aa604b7fd57fbc73b36ec53a3f5fb48a2b89'
-                '5ad6cc2ea15d18ee7cc15e3e57c792766b45f944c3e81cfe')
+                '74b2f532253c8214df9998ba8df305aa98eb1733c0010014'
+                'c5ed728b8d1a9fa83df0a0caf047e9cee14087cc79bbc7c9')
 
     def test_snp_with_ovmfx64_without_default(self):
         ld = guest.calc_launch_digest(
@@ -231,8 +231,8 @@ class TestGuest(unittest.TestCase):
                 0x21)
         self.assertEqual(
                 ld.hex(),
-                '37a9efc939f360a9ccfaaf1a7702137b81ea00c38d0361c8'
-                '523285fad1b10e94ad8c1ecd7c82ff589cb120670be74a99')
+                '7b30bdd3f3124ccfceaa882f4b3ab2ff3641bb421bb9bc6d'
+                'f6b9be0d8ecde33e6fba86505808ab5257e3e620a2006e53')
 
     def test_snp_with_ovmfx64_without_kernel_feature_snp_only(self):
         ld = guest.calc_launch_digest(
@@ -246,8 +246,8 @@ class TestGuest(unittest.TestCase):
                 0x1)
         self.assertEqual(
                 ld.hex(),
-                '7ef631fa7f659f7250de96c456a0eb7354bd3b9461982f38'
-                '6a41c6a6aede87870ad020552a5a0716672d5d6e5b86b8f9')
+                '6ea57de00ffc6f159c6b799f9c053cd165a021efed161467'
+                '8b1a0ae24c6b0374387f52ace64e0fbc08d1129a857a0b0c')
 
     def test_snp_with_ovmfx64_and_kernel_should_fail(self):
         with self.assertRaises(RuntimeError) as c:
@@ -272,10 +272,10 @@ class TestGuest(unittest.TestCase):
                 "/dev/null",
                 "/dev/null",
                 "",
-                0x21)
+                0x1)
         self.assertEqual(
                 ld.hex(),
-                '2e91d54814445ad178180af09f881efe4079fc54bfddd0ec1179ecd3cdbdf772')
+                'c9c378be09902e3d5927a93b73ed383620eea5387e1d16416807cfc949b7f834')
 
     def test_seves_with_multiple_vcpus(self):
         ld = guest.calc_launch_digest(
@@ -289,7 +289,7 @@ class TestGuest(unittest.TestCase):
                 0x21)
         self.assertEqual(
                 ld.hex(),
-                'c05d37600072dc5ff24bafc49410f0369ba3a37c130a7bb7055ac6878be300f7')
+                '2806971adf7a9d5bdef59d007f0200af685dec6721781fe1d6efa9236b3361f1')
 
     def test_seves_dump_vmsa(self):
         """Test that SEV-ES mode creates vmsa files if requrested."""
@@ -420,7 +420,7 @@ class TestGuest(unittest.TestCase):
                 540672)
         self.assertEqual(
                 ld.hex(),
-                '265aed64f2454253f6b19e49e17041ef052dedf964dd8d2740794a06aee3a720c475e3643a1b7e26b9efce7a107bf77f')
+                '27d154c27b7b359c935e250ec6fee72aa0ae8c1225e3b0e1cf46a9567e938066d7d6f94bbdc4a857818bdb79277a44b2')
 
     def test_snp_svsm_2_vcpus(self):
         """Test that SNP-SVSM mode produces correct measurement value when using 2 vCPUs"""
@@ -440,7 +440,7 @@ class TestGuest(unittest.TestCase):
                 540672)
         self.assertEqual(
                 ld.hex(),
-                '4ae03ca013690e956bc1eb16bc1c6465788dba64ad88a650db09216fa9cdddf06167bfce810eba8988108e71458dd68b')
+                '9b94745036aafddf4f7f8b00c7513abb5b7703178cb95aaa57928bd963d68d3bfcb715d6019b9167ee2517b11b0d9be7')
 
     def test_snp_svsm_dump_vmsa(self):
         """Test that SNP-SVSM mode creates vmsa files if requrested."""
