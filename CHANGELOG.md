@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.10 - 2024-05-24
+
 ### Modified
 - Set default of `--guest-features` back to 0x1 to align with
   Linux kernel 6.8 and newer ([kernel commit 5abf6dceb066](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=5abf6dceb066f2b02b225fd561440c98a8062681)).
