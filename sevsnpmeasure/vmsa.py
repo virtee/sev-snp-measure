@@ -44,12 +44,12 @@ class SevEsSaveArea(ctypes.Structure):
         ("vmpl2_ssp", c_uint64),
         ("vmpl3_ssp", c_uint64),
         ("u_cet", c_uint64),
-        ("reserved_1", c_uint8 * 2),
+        ("reserved_0xc8", c_uint8 * 2),
         ("vmpl", c_uint8),
         ("cpl", c_uint8),
-        ("reserved_2", c_uint8 * 4),
+        ("reserved_0xcc", c_uint8 * 4),
         ("efer", c_uint64),
-        ("reserved_3", c_uint8 * 104),
+        ("reserved_0xd8", c_uint8 * 104),
         ("xss", c_uint64),
         ("cr4", c_uint64),
         ("cr3", c_uint64),
@@ -66,7 +66,7 @@ class SevEsSaveArea(ctypes.Structure):
         ("dr1_addr_mask", c_uint64),
         ("dr2_addr_mask", c_uint64),
         ("dr3_addr_mask", c_uint64),
-        ("reserved_4", c_uint8 * 24),
+        ("reserved_0x1c0", c_uint8 * 24),
         ("rsp", c_uint64),
         ("s_cet", c_uint64),
         ("ssp", c_uint64),
@@ -81,21 +81,21 @@ class SevEsSaveArea(ctypes.Structure):
         ("sysenter_esp", c_uint64),
         ("sysenter_eip", c_uint64),
         ("cr2", c_uint64),
-        ("reserved_5", c_uint8 * 32),
+        ("reserved_0x248", c_uint8 * 32),
         ("g_pat", c_uint64),
         ("dbgctrl", c_uint64),
         ("br_from", c_uint64),
         ("br_to", c_uint64),
         ("last_excp_from", c_uint64),
         ("last_excp_to", c_uint64),
-        ("reserved_7", c_uint8 * 80),
+        ("reserved_0x298", c_uint8 * 80),
         ("pkru", c_uint32),
-        ("reserved_8", c_uint8 * 20),
-        ("reserved_9", c_uint64),
+        ("tsc_aux", c_uint32),
+        ("reserved_0x2f0", c_uint8 * 24),
         ("rcx", c_uint64),
         ("rdx", c_uint64),
         ("rbx", c_uint64),
-        ("reserved_10", c_uint64),
+        ("reserved_0x320", c_uint64),
         ("rbp", c_uint64),
         ("rsi", c_uint64),
         ("rdi", c_uint64),
@@ -107,7 +107,7 @@ class SevEsSaveArea(ctypes.Structure):
         ("r13", c_uint64),
         ("r14", c_uint64),
         ("r15", c_uint64),
-        ("reserved_11", c_uint8 * 16),
+        ("reserved_0x380", c_uint8 * 16),
         ("guest_exit_info_1", c_uint64),
         ("guest_exit_info_2", c_uint64),
         ("guest_exit_int_info", c_uint64),
@@ -120,7 +120,9 @@ class SevEsSaveArea(ctypes.Structure):
         ("pcpu_id", c_uint64),
         ("event_inj", c_uint64),
         ("xcr0", c_uint64),
-        ("reserved_12", c_uint8 * 16),
+        ("reserved_0x3f0", c_uint8 * 16),
+
+        # Floating Point Area #
         ("x87_dp", c_uint64),
         ("mxcsr", c_uint32),
         ("x87_ftw", c_uint16),
@@ -133,7 +135,7 @@ class SevEsSaveArea(ctypes.Structure):
         ("fpreg_x87", c_uint8 * 80),
         ("fpreg_xmm", c_uint8 * 256),
         ("fpreg_ymm", c_uint8 * 256),
-        ("unused", c_uint8 * 2448),
+        ("manual_padding", c_uint8 * 2448),
     ]
 
 
@@ -148,6 +150,8 @@ class VMSA(object):
             ss_flags = 0x93
             tr_flags = 0x8b
             rdx = vcpu_sig
+            mxcsr = 0x1f80
+            fcw = 0x37f
         elif vmm_type == VMMType.ec2:
             cs_flags = 0x9b
             if eip == 0xfffffff0:
@@ -155,6 +159,8 @@ class VMSA(object):
             ss_flags = 0x92
             tr_flags = 0x83
             rdx = 0
+            mxcsr = 0
+            fcw = 0
         else:
             raise ValueError("unknown VMM type")
 
@@ -180,6 +186,8 @@ class VMSA(object):
             rdx=rdx,
             sev_features=sev_features,
             xcr0=0x1,
+            mxcsr=mxcsr,
+            x87_fcw=fcw
         )
 
     def __init__(self, sev_mode: SevMode, ap_eip: int, vcpu_sig: int, guest_features: int,
@@ -204,6 +212,13 @@ class VMSA_SVSM(object):
 
     @staticmethod
     def build_save_area(eip: int, sev_features: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
+        if vmm_type == VMMType.QEMU:
+            mxcsr = 0x1f80
+            fcw = 0x37f
+        else:
+            mxcsr = 0
+            fcw = 0
+
         return SevEsSaveArea(
             es=VmcbSeg(16, 0xc93, 0xffffffff, 0),
             cs=VmcbSeg(8, 0xc9b, 0xffffffff, 0),
@@ -226,6 +241,8 @@ class VMSA_SVSM(object):
             rdx=vcpu_sig,
             sev_features=sev_features,
             xcr0=0x1,
+            mxcsr=mxcsr,
+            fcw=fcw
         )
 
     def __init__(self, ap_eip: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
