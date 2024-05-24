@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Modified
+- Set default of `--guest-features` back to 0x1 to align with
+  Linux kernel 6.8 and newer ([kernel commit 5abf6dceb066](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=5abf6dceb066f2b02b225fd561440c98a8062681)).
+- Updated dependencies: cryptography to 42.0.4, removed unneeded
+  types-cryptography.
+
 ## 0.0.9 - 2024-02-09
 
 ### Added
