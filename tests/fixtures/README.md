@@ -4,9 +4,7 @@
 
 `ovmf_AmdSev_suffix.bin` contains the last 4KB of the `OVMF.fd` binary from
 edk2's `OvmfPkg/AmdSev/AmdSevX64.dsc` build; this is the build that supports
-kernel-hashes and measured direct boot.  Currently the SNP support for
-kernel-hashes is not upstream in the edk2 repository, so this is built from the
-[snp-kernel-hashes-v3 fork](https://github.com/confidential-containers-demo/edk2/tree/snp-kernel-hashes-v3).
+kernel-hashes and measured direct boot.
 
 `ovmf_OvmfX64_suffix.bin` contains the last 4KB of the `OVMF.fd` binary from
 edk2's `OvmfPkg/OvmfPkgX64.dsc` build; this is the standard build of OVMF.
@@ -17,6 +15,10 @@ binaries.
 The end of the file contains a GUIDed footer table with entries that hold the
 SEV-ES AP reset vector address and SNP metadata table, which are needed in
 order to compute VMSAs for SEV-ES guests and the list of SNP measured pages.
+
+Since the edk2 upstream repository now supports kernel hashes and contains the latest OVMF sections for AmdSevX64, 
+both of the binary files have been built using the latest edk2 available [release] (https://github.com/tianocore/edk2/tree/edk2-stable202405).
+This would be the May 2024 stable realease.
 
 ## SVSM
 
