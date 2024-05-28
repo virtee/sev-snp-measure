@@ -17,6 +17,7 @@ class SectionType(Enum):
     SNP_SEC_MEM = 1
     SNP_SECRETS = 2
     CPUID = 3
+    SVSM_CAA = 4
     SNP_KERNEL_HASHES = 0x10
 
 

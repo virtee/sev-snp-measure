@@ -62,6 +62,8 @@ def snp_update_section(desc: OvmfSevMetadataSectionDesc, gctx: GCTX, ovmf: OVMF,
             gctx.update_cpuid_page(desc.gpa)
     elif desc.section_type() == SectionType.SNP_KERNEL_HASHES:
         snp_update_kernel_hashes(gctx, ovmf, sev_hashes, desc.gpa, desc.size)
+    elif desc.section_type() == SectionType.SVSM_CAA:
+        gctx.update_zero_pages(desc.gpa, desc.size)
     else:
         raise ValueError("unknown OVMF metadata section type")
 
