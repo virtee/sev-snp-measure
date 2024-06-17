@@ -2,16 +2,21 @@
 
 ## Unreleased
 
+### Modified
+- Support OVMF section `SVSM_CAA` (fix `ValueError: 4 is not a valid
+  SectionType`) (by [@DGonzalezVillal](https://github.com/DGonzalezVillal)).
+
 ## 0.0.10 - 2024-05-24
 
 ### Modified
 - Set default of `--guest-features` back to 0x1 to align with
-  Linux kernel 6.8 and newer ([kernel commit 5abf6dceb066](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=5abf6dceb066f2b02b225fd561440c98a8062681)).
+  Linux kernel 6.8 and newer ([kernel commit 5abf6dceb066](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=5abf6dceb066f2b02b225fd561440c98a8062681)) (by
+  [@larrydewey](https://github.com/larrydewey)).
 - Update the VMSA to match latest upstream kernel; this should match
   host Linux kernel 6.10 and newer; this is a **BREAKING CHANGE** for older
-  kernels.
+  kernels (by [@DGonzalezVillal](https://github.com/DGonzalezVillal)).
 - Updated dependencies: cryptography to 42.0.4, removed unneeded
-  types-cryptography.
+  types-cryptography (by [@msanft](https://github.com/msanft)).
 
 ## 0.0.9 - 2024-02-09
 
