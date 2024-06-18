@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.11 - 2024-06-18
+
 ### Modified
 - Support OVMF section `SVSM_CAA` (fix `ValueError: 4 is not a valid
   SectionType`) (by [@DGonzalezVillal](https://github.com/DGonzalezVillal)).
