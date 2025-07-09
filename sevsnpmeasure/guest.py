@@ -54,7 +54,10 @@ def snp_update_kernel_hashes(gctx: GCTX, ovmf: OVMF, sev_hashes: Optional[SevHas
 def snp_update_section(desc: OvmfSevMetadataSectionDesc, gctx: GCTX, ovmf: OVMF,
                        sev_hashes: Optional[SevHashes], vmm_type: VMMType) -> None:
     if desc.section_type() == SectionType.SNP_SEC_MEM:
-        gctx.update_zero_pages(desc.gpa, desc.size)
+        if vmm_type == VMMType.gce:
+            gctx.update_unmeasured_pages(desc.gpa, desc.size)
+        else:
+            gctx.update_zero_pages(desc.gpa, desc.size)
     elif desc.section_type() == SectionType.SNP_SECRETS:
         gctx.update_secrets_page(desc.gpa)
     elif desc.section_type() == SectionType.CPUID:

@@ -128,6 +128,38 @@ class TestGuest(unittest.TestCase):
                 '7d3756157c805bf6adf617064c8552e8c1688fa1c8756f11'
                 'cbf56ba5d25c9270fb69c0505c1cbe1c5c66c0e34c6ed3be')
 
+    def test_snp_gce_default(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP,
+                1,
+                None,
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
+                "/dev/null",
+                "/dev/null",
+                "",
+                0x1,
+                vmm_type=vmm_types.VMMType.gce)
+        self.assertEqual(
+                ld.hex(),
+                '5da7106cf14cf46b1725ebab123eb9e53bd46a1e9f400cd0'
+                'c08e7827b04b688ea8b4e403c8404efed4397ea5d5d0722e')
+
+    def test_snp_gce_with_multiple_vcpus_default(self):
+        ld = guest.calc_launch_digest(
+                SevMode.SEV_SNP,
+                4,
+                None,
+                "tests/fixtures/ovmf_AmdSev_suffix.bin",
+                "/dev/null",
+                "/dev/null",
+                "",
+                0x1,
+                vmm_type=vmm_types.VMMType.gce)
+        self.assertEqual(
+                ld.hex(),
+                '5c5debf100fc339f90276e761ee1f1658d08922c3b20e2a2'
+                'e6c7a6c3370b2452a15a00eae11886a93d6fd1e7ab81e29d')
+
     def test_snp_default(self):
         ld = guest.calc_launch_digest(
                 SevMode.SEV_SNP,

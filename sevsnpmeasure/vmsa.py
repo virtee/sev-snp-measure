@@ -144,7 +144,8 @@ class VMSA(object):
 
     @staticmethod
     def build_save_area(eip: int, sev_features: int, vcpu_sig: int, vmm_type: VMMType = VMMType.QEMU):
-        # QEMU and EC2 differ slightly on initial register state
+        # QEMU, EC2, and GCE differ slightly on initial register state
+        g_pat = 0x7040600070406  # PAT MSR: See AMD APM Vol 2, Section A.3
         if vmm_type == VMMType.QEMU:
             cs_flags = 0x9b
             ss_flags = 0x93
@@ -159,6 +160,14 @@ class VMSA(object):
             ss_flags = 0x92
             tr_flags = 0x83
             rdx = 0
+            mxcsr = 0
+            fcw = 0
+        elif vmm_type == VMMType.gce:
+            cs_flags = 0x9b
+            ss_flags = 0x93
+            tr_flags = 0x8b
+            g_pat = 0x00070106  # GCE hypervisor overwrites default g_pat
+            rdx = 0x600
             mxcsr = 0
             fcw = 0
         else:
@@ -182,7 +191,7 @@ class VMSA(object):
             dr6=0xffff0ff0,
             rflags=0x2,
             rip=eip & 0xffff,
-            g_pat=0x7040600070406,  # PAT MSR: See AMD APM Vol 2, Section A.3
+            g_pat=g_pat,
             rdx=rdx,
             sev_features=sev_features,
             xcr0=0x1,
