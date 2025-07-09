@@ -54,7 +54,7 @@ options:
   --vcpu-model MODEL    Guest vcpu model
   --vcpu-stepping STEPPING
                         Guest vcpu stepping
-  --vmm-type VMMTYPE    Type of guest vmm (QEMU, ec2)
+  --vmm-type VMMTYPE    Type of guest vmm (QEMU, ec2, gce)
   --ovmf PATH           OVMF file to calculate hash from
   --kernel PATH         Kernel file to calculate hash from
   --initrd PATH         Initrd file to calculate hash from (use with --kernel)

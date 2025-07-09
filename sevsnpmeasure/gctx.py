@@ -81,8 +81,12 @@ class GCTX(object):
             self._update(0x03, gpa + offset, ZEROS)
             offset += 4096
 
-    def update_unmeasured_page(self, gpa):
-        self._update(0x04, gpa, ZEROS)
+    def update_unmeasured_pages(self, gpa, length_bytes):
+        assert length_bytes % 4096 == 0
+        offset = 0
+        while offset < length_bytes:
+            self._update(0x04, gpa + offset, ZEROS)
+            offset += 4096
 
     def update_secrets_page(self, gpa):
         self._update(0x05, gpa, ZEROS)
