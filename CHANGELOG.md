@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Add `--vmm-type=gce` to calculate SNP measurements according to the GCE
+  (Google Compute Engine) VMM (by [@joao-hs](https://github.com/joao-hs)).
+
 ## 0.0.11 - 2024-06-18
 
 ### Modified
