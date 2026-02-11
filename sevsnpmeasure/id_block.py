@@ -5,13 +5,66 @@
 
 import hashlib
 import base64
+from abc import ABC, abstractmethod
 import ctypes
-import argparse
 from ctypes import c_uint8
 
 from cryptography.hazmat.primitives.asymmetric import ec, utils
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
+
+import sdkms.v1 as sdkms
+
+class EcSigner(ABC):
+    @abstractmethod
+    def sign(self, data: bytes) -> bytes:
+        """
+        Sign `data`, returning the signature in DER-encoded ASN.1
+        """
+        pass
+
+    @abstractmethod
+    def public_key(self) -> ec.EllipticCurvePublicKey:
+        """
+        Retrieve the public key
+        """
+        pass
+
+class FileSigner(EcSigner):
+    def __init__(self, pem_file_path: str):
+        with open(pem_file_path, "rb") as pem_file:
+            pem_data = pem_file.read()
+
+        private_key = serialization.load_pem_private_key(
+            pem_data,
+            password = None,
+            backend = default_backend()
+        )
+        if not isinstance(private_key, ec.EllipticCurvePrivateKey):
+            raise ValueError("The provided PEM file does not contain an EC private key.")
+
+        self.k = private_key
+
+    def sign(self, data: bytes) -> bytes:
+        return self.k.sign(data, ec.ECDSA(hashes.SHA384(), deterministic_signing=True))
+
+    def public_key(self) -> ec.EllipticCurvePublicKey:
+        return self.k.public_key()
+
+class SdkmsSigner(EcSigner):
+    def __init__(self, api_client: sdkms.ApiClient, sobject: sdkms.SobjectDescriptor):
+        self.k = sdkms.SecurityObjectsApi(api_client).get_security_object_ex(sobject)
+        if self.k.obj_type != sdkms.ObjectType.EC:
+            raise ValueError("The provided SobjectDescriptor doesn't refer to an EC key.")
+
+        self.api_client = api_client
+
+    def sign(self, data: bytes) -> bytes:
+        req = sdkms.SignRequest(data=bytearray(data), hash_alg=sdkms.DigestAlgorithm.SHA384, deterministic_signature=True)
+        return bytes(sdkms.SignAndVerifyApi(api_client=self.api_client).sign(self.k.kid, req).signature)
+
+    def public_key(self) -> ec.EllipticCurvePublicKey:
+        return serialization.load_der_public_key(self.k.pub_key)
 
 DefaultVersion = 1
 DefaultPolicy = 0x20000 # reserved bit 17 must be one. TODO: proper policy
@@ -85,8 +138,7 @@ class SnpSignature(CheckedCtypesStruct):
         ("reserved", ctypes.c_char * 368)
     ]
 
-
-def snp_calc_id_block(ld: bytes, family_id: bytes, image_id: bytes, guest_svn: int, idkey_file: str, authorkey_file: str) -> str:
+def snp_calc_id_block(ld: bytes, family_id: bytes, image_id: bytes, guest_svn: int, id_privkey: EcSigner, author_privkey: EcSigner):
     digest = LaunchDigest.from_buffer_copy(ld)
     id_block = IdBlock(
         ld=digest,
@@ -96,11 +148,9 @@ def snp_calc_id_block(ld: bytes, family_id: bytes, image_id: bytes, guest_svn: i
         guest_svn=guest_svn.to_bytes(4, byteorder='little', signed=False),
         policy=DefaultPolicy
     )
-    id_privkey = load_private_key_from_pem_file(idkey_file)
     id_key = ECPubKey.from_buffer_copy(marshal_ec_public_key(id_privkey))
     block_sig = ECSignature.from_buffer_copy(sign_in_snp_format(id_privkey, bytes(id_block)))
-    if authorkey_file is not None:
-        author_privkey = load_private_key_from_pem_file(authorkey_file)
+    if author_privkey is not None:
         author_key = ECPubKey.from_buffer_copy(marshal_ec_public_key(author_privkey))
         id_key_sig = ECSignature.from_buffer_copy(sign_in_snp_format(author_privkey, marshal_ec_public_key(id_privkey)))
     else:
@@ -114,20 +164,21 @@ def snp_calc_id_block(ld: bytes, family_id: bytes, image_id: bytes, guest_svn: i
         id_key_sig=id_key_sig,
         author_key=author_key,
     )
-    # key digests for attestation report validating
-    output_str = f"id-block={base64.b64encode(bytes(id_block)).decode()},"
-    output_str += f"id-auth={base64.b64encode(bytes(id_auth)).decode()}\n"
-    id_key_digest = pub_to_digest(id_privkey)
-    output_str += f"id_key_hash: {base64.b64encode(id_key_digest).decode()}\n"
-    if authorkey_file is not None:
-        author_key_digest = pub_to_digest(author_privkey)
-        output_str += f"author_key: {base64.b64encode(author_key_digest).decode()}"
+    
+    ret = {
+        "id_block": bytes(id_block),
+        "id_auth": bytes(id_auth),
+        "id_key_digest": pub_to_digest(id_privkey),
+    }
+    
+    if author_privkey is not None:
+        ret["author_key_digest"] = pub_to_digest(author_privkey)
 
-    return output_str
+    return ret
 
 
-def sign_in_snp_format(priv_key: ec.EllipticCurvePrivateKey, data: bytes) -> bytes:
-    signature_raw = priv_key.sign(data, ec.ECDSA(hashes.SHA384(), deterministic_signing=True))
+def sign_in_snp_format(priv_key: EcSigner, data: bytes) -> bytes:
+    signature_raw = priv_key.sign(data)
     r, s = utils.decode_dss_signature(signature_raw)
     sig_r = r.to_bytes(0x48, byteorder="little")
     sig_s = s.to_bytes(0x48, byteorder="little")
@@ -137,23 +188,7 @@ def sign_in_snp_format(priv_key: ec.EllipticCurvePrivateKey, data: bytes) -> byt
     )
     return bytes(signature)
 
-
-def load_private_key_from_pem_file(pem_file_path: str) -> ec.EllipticCurvePrivateKey:
-    with open(pem_file_path, "rb") as pem_file:
-        pem_data = pem_file.read()
-
-    private_key = serialization.load_pem_private_key(
-        pem_data,
-        password=None,  # Change this to a password if your PEM file is encrypted
-        backend=default_backend()
-    )
-    if isinstance(private_key, ec.EllipticCurvePrivateKey):
-        return private_key
-
-    raise ValueError("The provided PEM file does not contain an EC private key.")
-
-
-def marshal_ec_public_key(priv_key: ec.EllipticCurvePrivateKey) -> bytes:
+def marshal_ec_public_key(priv_key: EcSigner) -> bytes:
     pub_key = priv_key.public_key()
     if not isinstance(pub_key.curve, ec.SECP384R1):
         raise ValueError('SNP only supports the EC curve P-384')
@@ -169,7 +204,7 @@ def marshal_ec_public_key(priv_key: ec.EllipticCurvePrivateKey) -> bytes:
     return bytes(result)
 
 
-def pub_to_digest(priv_key: ec.EllipticCurvePrivateKey) -> bytes:
+def pub_to_digest(priv_key: EcSigner) -> bytes:
     hasher = hashlib.new("sha384")
     pub_bytes = marshal_ec_public_key(priv_key)
     hasher.update(pub_bytes)

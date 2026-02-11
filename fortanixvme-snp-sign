@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (c) Fortanix, Inc.
+# SPDX-License-Identifier: Apache-2.0
+#
+
+import argparse
+import base64
+import sys
+import pathlib
+import os
+import sdkms.v1 as sdkms
+
+from sevsnpmeasure.guest import calc_launch_digest
+from sevsnpmeasure import vcpu_types
+from sevsnpmeasure.id_block import FileSigner, SdkmsSigner, snp_calc_id_block
+from sevsnpmeasure.sev_mode import SevMode
+
+def auth_sdkms(api_key: str, api_endpoint: str) -> sdkms.ApiClient:
+    api_key = base64.b64decode(api_key).decode('ascii')
+    parts = api_key.split(':')
+    if len(parts) != 2:
+        print('Invalid API key provided')
+        exit(1)
+
+    config = sdkms.configuration.Configuration()
+    config.username = parts[0]
+    config.password = parts[1]
+    config.host = api_endpoint
+
+    api_client = sdkms.ApiClient(configuration=config)
+
+    auth = sdkms.AuthenticationApi(api_client).authorize()
+
+    # The swagger interface calls this type of authorization an 'apiKey'.
+    # This is not related to the SDKMS notion of an API key. The swagger
+    # apiKey is our auth token.
+    config.api_key['Authorization'] = auth.access_token
+    config.api_key_prefix['Authorization'] = 'Bearer'
+
+    return api_client
+
+def hex16bytes(s: str) -> str:
+    b = bytes.fromhex(s)
+    if len(b) != 16:
+        raise argparse.ArgumentTypeError(f"Must be exactly 32 hex characters (16 bytes)")
+    return b
+
+parser = argparse.ArgumentParser(prog='fortanixvme-snp-sign', description='Sign VME-SNP binaries')
+parser.add_argument('--ovmf', metavar='PATH', required=True, help='OVMF file to calculate hash from')
+parser.add_argument('--kernel', metavar='PATH', required=True, help='Kernel file to calculate hash from')
+parser.add_argument('--out-prefix', metavar='PATH', required=True, help='File path prefix from which the output filename fill be generated')
+idkey = parser.add_mutually_exclusive_group(required=True)
+idkey.add_argument('--id-key-file', metavar='PATH', help='id private key file')
+idkey.add_argument('--id-key-dsm-id', metavar='UUID', help='id private key DSM UUID')
+idkey.add_argument('--id-key-dsm-name', metavar='NAME', help='id private key DSM name')
+authorkey = parser.add_mutually_exclusive_group()
+authorkey.add_argument('--author-key-file', metavar='PATH', help='author private key file')
+authorkey.add_argument('--author-key-dsm-id', metavar='UUID', help='author private key DSM UUID')
+authorkey.add_argument('--author-key-dsm-name', metavar='NAME', help='author private key DSM name')
+parser.add_argument('--guest-svn', metavar='SVN', required=True, type=lambda x: int(x, 0), help="Guest SVN (integer)"),
+parser.add_argument('--family-id', metavar='HEX', required=True, type=hex16bytes, help="Family ID (in hex)"),
+parser.add_argument('--image-id', metavar='HEX', required=True, type=hex16bytes, help="Image ID (in hex)"),
+parser.add_argument("--api-endpoint", metavar="URL", default=os.getenv("FORTANIX_API_ENDPOINT"), help="DSM API endpoint to connect to")
+parser.add_argument("--api-key", default=os.getenv("FORTANIX_API_KEY"), help="Env variable name of API Key")
+args = parser.parse_args()
+
+try:
+    ld = calc_launch_digest(
+        mode = SevMode.SEV_SNP,
+        vcpus = 1,
+        vcpu_sig = vcpu_types.CPU_SIGS['EPYC-v4'],
+        initrd = None,
+        append = None,
+        guest_features = 1,
+        ovmf_file = args.ovmf,
+        kernel = args.kernel,
+    )
+
+    if args.id_key_dsm_id or args.id_key_dsm_name or args.author_key_dsm_id or args.author_key_dsm_name:
+        if not args.api_endpoint or not args.api_key:
+            parser.error("Must pass --api-endpoint and --api-key when specifying a DSM key")
+        api_client = auth_sdkms(args.api_key, args.api_endpoint)
+
+    if args.id_key_file:
+        id_privkey = FileSigner(args.id_key_file)
+    if args.id_key_dsm_id:
+        id_privkey = SdkmsSigner(api_client, sdkms.SobjectDescriptor(kid=args.id_key_dsm_id))
+    if args.id_key_dsm_name:
+        id_privkey = SdkmsSigner(api_client, sdkms.SobjectDescriptor(name=args.id_key_dsm_name))
+
+    author_privkey = None
+    if args.author_key_file:
+        author_privkey = FileSigner(args.author_key_file)
+    if args.author_key_dsm_id:
+        author_privkey = SdkmsSigner(api_client, sdkms.SobjectDescriptor(kid=args.author_key_dsm_id))
+    if args.author_key_dsm_name:
+        author_privkey = SdkmsSigner(api_client, sdkms.SobjectDescriptor(name=args.author_key_dsm_name))
+
+    result = snp_calc_id_block(
+        ld = ld,
+        family_id = args.family_id,
+        image_id = args.image_id,
+        guest_svn = args.guest_svn,
+        id_privkey = id_privkey,
+        author_privkey = author_privkey,
+    )
+
+
+    with open(args.out_prefix + ".id_block", "wb") as f:
+        f.write(result["id_block"])
+    with open(args.out_prefix + ".id_auth", "wb") as f:
+        f.write(result["id_auth"])
+    with open(args.out_prefix + ".id_key_digest", "wb") as f:
+        f.write(result["id_key_digest"])
+    if "author_key_digest" in result:
+        with open(args.out_prefix + ".author_key_digest", "wb") as f:
+            f.write(result["author_key_digest"])
+except RuntimeError as e:
+    print(f"Error: {e}", file=sys.stderr)
+    sys.exit(1)
