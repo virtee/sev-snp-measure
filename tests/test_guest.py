@@ -109,8 +109,8 @@ class TestGuest(unittest.TestCase):
                 vmm_type=vmm_types.VMMType.ec2)
         self.assertEqual(
                 ld.hex(),
-                '6ae80856486b1396af8c82a40351d6ed76a20c785e9c7fa4'
-                'ffa27c22d5d6313b4b3b458cd3c9968e6f89fb5d8450d7a6')
+                '0ce9ccc06bab55eebe8abc234f3df6514883977a68a591b7'
+                '1052498ab52b2f1aa415db338033946ef93aa8278c0d67fb')
 
     def test_snp_ec2_feature_snp_only(self):
         ld = guest.calc_launch_digest(
@@ -125,8 +125,8 @@ class TestGuest(unittest.TestCase):
                 vmm_type=vmm_types.VMMType.ec2)
         self.assertEqual(
                 ld.hex(),
-                '7d3756157c805bf6adf617064c8552e8c1688fa1c8756f11'
-                'cbf56ba5d25c9270fb69c0505c1cbe1c5c66c0e34c6ed3be')
+                '0883bd0eeb716e65b7b977a321c278d1e51b33b5c655fab9'
+                '85443bbcc65c086b9c15e8a0bd8811050dec7e24964e5056')
 
     def test_snp_gce_default(self):
         ld = guest.calc_launch_digest(

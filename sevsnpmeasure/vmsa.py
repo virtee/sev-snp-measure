@@ -159,7 +159,7 @@ class VMSA(object):
                 cs_flags = 0x9a
             ss_flags = 0x92
             tr_flags = 0x83
-            rdx = 0
+            rdx = 0x600
             mxcsr = 0
             fcw = 0
         elif vmm_type == VMMType.gce:
