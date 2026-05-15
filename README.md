@@ -48,7 +48,7 @@ options:
   --vcpus N             Number of guest vcpus
   --vcpu-type CPUTYPE   Type of guest vcpu (EPYC, EPYC-v1, EPYC-v2, EPYC-IBPB, EPYC-v3, EPYC-v4,
                         EPYC-Rome, EPYC-Rome-v1, EPYC-Rome-v2, EPYC-Rome-v3, EPYC-Milan, EPYC-
-                        Milan-v1, EPYC-Milan-v2, EPYC-Genoa, EPYC-Genoa-v1)
+                        Milan-v1, EPYC-Milan-v2, EPYC-Genoa, EPYC-Genoa-v1, EPYC-Turin)
   --vcpu-sig VALUE      Guest vcpu signature value
   --vcpu-family FAMILY  Guest vcpu family
   --vcpu-model MODEL    Guest vcpu model
