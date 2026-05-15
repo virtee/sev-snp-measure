@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+- Support `--vcpu-type=EPYC-Turin` (by [@frankdavid](https://github.com/frankdavid)).
+
+### Modified
+- Updated EC2 VMSA definition (by [@jhnberg](https://github.com/jhnberg)).
+- Updated dependencies: cryptography to 46.0.7.
+- Type-checker fix (by [@frankdavid](https://github.com/frankdavid)).
+- Added license field in setup.cfg.
+
 ## 0.0.12 - 2025-08-08
 
 ### Added
