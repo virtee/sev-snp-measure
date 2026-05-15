@@ -102,7 +102,7 @@ def snp_calc_launch_digest(vcpus: int, vcpu_sig: int, ovmf_file: str,
     # Allow users to provide a precalculated OVMF hash.
     # Ignores the contents of the OVMF file in front of us.
     if ovmf_hash_str:
-        ovmf_hash = bytearray.fromhex(ovmf_hash_str)
+        ovmf_hash = bytes.fromhex(ovmf_hash_str)
         gctx = GCTX(seed=ovmf_hash)
     else:
         gctx.update_normal_pages(ovmf.gpa(), ovmf.data())
