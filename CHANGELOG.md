@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.0.13 - 2026-05-21
 
 ### Added
 - Support `--vcpu-type=EPYC-Turin` (by [@frankdavid](https://github.com/frankdavid)).
