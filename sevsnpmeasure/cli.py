@@ -35,9 +35,9 @@ def print_measurement(ld: bytes, sev_mode: SevMode, output_format: str, verbose:
 def get_vcpu_sig(parser, args, vmm_type):
     if args.mode == 'sev':
         return 0
-    elif args.vcpu_family:
+    elif args.vcpu_family is not None:
         return vcpu_types.cpu_sig(args.vcpu_family, args.vcpu_model, args.vcpu_stepping)
-    elif args.vcpu_sig:
+    elif args.vcpu_sig is not None:
         return args.vcpu_sig
     elif args.vcpu_type:
         return vcpu_types.CPU_SIGS[args.vcpu_type]
